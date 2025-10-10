@@ -58,6 +58,7 @@ vim.opt.showmode = false -- don't show mode in command line
 vim.opt.pumheight = 10 -- popup menu height
 vim.opt.pumblend = 10 -- popup menu transparency
 vim.opt.winblend = 10 -- floating window transparency
+vim.opt.winborder = "rounded"
 vim.opt.conceallevel = 0 -- don't hide markup
 vim.opt.concealcursor = "" -- don't hide cursor line markup
 vim.opt.lazyredraw = true -- don't redraw during macros
