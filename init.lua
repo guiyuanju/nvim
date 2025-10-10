@@ -70,9 +70,8 @@ vim.opt.writebackup = false -- don't create backup before writing
 vim.opt.swapfile = false -- don't create swap files
 vim.opt.undofile = true -- persistent undo
 vim.opt.undodir = vim.fn.expand("~/.vim/undodir") -- undo directory
-vim.opt.updatetime = 300 -- faster completion
-vim.opt.timeoutlen = 500 -- key timeout duration
-vim.opt.ttimeoutlen = 0 -- key code timeout
+-- vim.opt.updatetime = 300 -- faster completion
+vim.opt.timeout = false -- key chord never timeout
 vim.opt.autoread = true -- auto reload files changed outside of vim
 vim.opt.autowrite = false -- don't auto save
 
@@ -544,7 +543,7 @@ local function setup_dynamic_statusline()
   })
 end
 
-setup_dynamic_statusline()
+-- setup_dynamic_statusline()
 
 -- ============================================================================
 -- LSP & Languages
