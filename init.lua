@@ -545,7 +545,8 @@ vim.g.mapleader = " "                              -- Set leader key to space
 vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
 
 -- Search
-vim.keymap.set("n", "<leader>ss", "/", { desc = "Clear search highlights" })
+vim.keymap.set("n", "<leader>ss", ":Pick buf_lines<CR>", { desc = "Seach buffer lines" })
+vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
 vim.keymap.set("n", "<leader>sc", ":nohlsearch<CR>", { desc = "Clear search highlights" })
 
 -- Y to EOL
@@ -561,6 +562,7 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down (centered)" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up (centered)" })
 
 -- Buffer navigation
+vim.keymap.set("n", "<leader>bb", ":Pick buffers<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { desc = "Delete buffer" })
@@ -598,8 +600,13 @@ vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position"
 
 -- Quick file navigation
 vim.keymap.set("n", "<leader>fe", ":Explore<CR>", { desc = "Open file explorer" })
-vim.keymap.set("n", "<leader>ff", ":find ", { desc = "Find file" })
+vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
+-- Function to open the recent files picker
+local function open_recent_files_picker()
+  MiniPick.start({ source = { items = MiniVisits.list_paths() } })
+end
+vim.keymap.set('n', '<leader>fr', open_recent_files_picker, { desc = 'Open recent files picker' })
 
 -- Terminal
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
@@ -611,6 +618,13 @@ vim.keymap.set("n", "<leader>fp", function()
   vim.fn.setreg("+", path)
   print("file:", path)
 end)
+
+-- Picker
+vim.keymap.set("n", "<leader>pp", ":Pick resume<CR>")
+vim.keymap.set("n", "<leader>pc", ":Pick commands<CR>")
+vim.keymap.set("n", "<leader>pd", ":Pick diagnostic<CR>")
+vim.keymap.set("n", "<leader>pg", ":Pick git_commits<CR>")
+vim.keymap.set("n", "<leader>ph", ":Pick history<CR>")
 
 -- ===================================================================
 -- ## Package Manager Lazy
@@ -633,13 +647,16 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-vim.g.mapleader = " "
-vim.g.maplocalleader = "\\"
-
 -- Setup lazy.nvim
 require("lazy").setup({
   spec = {
     -- add your plugins here
+    { 'nvim-mini/mini.pairs', version = '*', opts = {} },
+    { 'nvim-mini/mini.bufremove', version = '*', opts = {} },
+    { 'nvim-mini/mini.diff', version = '*', opts = { view = { style = 'sign' } } },
+    { 'nvim-mini/mini.pick', version = '*', opts = {} },
+    { 'nvim-mini/mini.visits', version = '*', opts = {} },
+    { 'nvim-mini/mini.extra', version = '*', opts = {} }, -- for extra pickers
   },
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
@@ -647,3 +664,4 @@ require("lazy").setup({
   -- automatically check for plugin updates
   checker = { enabled = true },
 })
+

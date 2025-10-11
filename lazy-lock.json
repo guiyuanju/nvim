@@ -1,3 +1,9 @@
 {
-  "lazy.nvim": { "branch": "main", "commit": "1ea3c4085785f460fb0e46d2fe1ee895f5f9e7c1" }
+  "lazy.nvim": { "branch": "main", "commit": "1ea3c4085785f460fb0e46d2fe1ee895f5f9e7c1" },
+  "mini.bufremove": { "branch": "main", "commit": "66019ecebdc5bc0759e04747586994e2e3f98416" },
+  "mini.diff": { "branch": "main", "commit": "ec8a5ae365c5d15920721ea42b1351dbc9e61f2d" },
+  "mini.extra": { "branch": "main", "commit": "87be97ac00a8827e8380156cfef7222afb38f8bd" },
+  "mini.pairs": { "branch": "main", "commit": "69864a2efb36c030877421634487fd90db1e4298" },
+  "mini.pick": { "branch": "main", "commit": "fa1e449e1080bf7aa9b2890ee186d23b1b4e1287" },
+  "mini.visits": { "branch": "main", "commit": "c0a3b02f5d82080a2aa6cd9185ff16944ce2451a" }
 }
