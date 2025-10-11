@@ -1,3 +1,7 @@
+-- ===================================================================
+-- ## OPTIONS
+-- ===================================================================
+
 -- Theme & transparency
 vim.cmd.colorscheme(
   "default"
@@ -70,6 +74,11 @@ vim.opt.writebackup = false -- don't create backup before writing
 vim.opt.swapfile = false -- don't create swap files
 vim.opt.undofile = true -- persistent undo
 vim.opt.undodir = vim.fn.expand("~/.vim/undodir") -- undo directory
+-- Create undo directory if it doesn't exist
+local undodir = vim.fn.expand("~/.vim/undodir")
+if vim.fn.isdirectory(undodir) == 0 then
+  vim.fn.mkdir(undodir, "p")
+end
 -- vim.opt.updatetime = 300 -- faster completion
 vim.opt.timeout = false -- key chord never timeout
 vim.opt.autoread = true -- auto reload files changed outside of vim
@@ -92,77 +101,21 @@ vim.opt.encoding = "UTF-8" -- set encoding
 vim.opt.splitbelow = true                          -- Horizontal splits go below
 vim.opt.splitright = true                          -- Vertical splits go right
 
--- Key mappings
-vim.g.mapleader = " "                              -- Set leader key to space
-vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
+-- Command-line completion
+vim.opt.wildmenu = true
+vim.opt.wildmode = "longest:full,full"
+vim.opt.wildignore:append({ "*.o", "*.obj", "*.pyc", "*.class", "*.jar" })
 
--- Search
-vim.keymap.set("n", "<leader>ss", "/", { desc = "Clear search highlights" })
-vim.keymap.set("n", "<leader>sc", ":nohlsearch<CR>", { desc = "Clear search highlights" })
+-- Better diff options
+vim.opt.diffopt:append("linematch:60")
 
--- Y to EOL
-vim.keymap.set("n", "Y", "y$", { desc = "Yank to the end of line" })
-
--- Delete without yanking
-vim.keymap.set({ "n", "v" }, "<leader>d", '"_d', { desc = "Delete without yanking" })
-
--- Center screen when jumping
-vim.keymap.set("n", "n", "nzzzv", { desc = "Next search result (centered)" })
-vim.keymap.set("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
-vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down (centered)" })
-vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up (centered)" })
-
--- Buffer navigation
-vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
-vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
-vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { desc = "Delete buffer" })
-vim.keymap.set("n", "<leader>`", ":b#<CR>", { desc = "Previous active buffer" })
-
--- Window navigation
-vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
-vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to bottom window" })
-vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to top window" })
-vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
-
--- Window splitting
-vim.keymap.set("n", "<leader>wv", ":vsplit<CR>", { desc = "Split window vertically" })
-vim.keymap.set("n", "<leader>wh", ":split<CR>", { desc = "Split window horizontally" })
-vim.keymap.set("n", "<leader>wd", ":close<CR>", { desc = "Split window horizontally" })
-
--- Window resizing
-vim.keymap.set("n", "<C-Up>", ":resize +2<CR>", { desc = "Increase window height" })
-vim.keymap.set("n", "<C-Down>", ":resize -2<CR>", { desc = "Decrease window height" })
-vim.keymap.set("n", "<C-Left>", ":vertical resize -2<CR>", { desc = "Decrease window width" })
-vim.keymap.set("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase window width" })
-
--- Move lines up/down
-vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down" })
-vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up" })
-vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
-vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
-
--- Better indenting in visual mode
-vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect" })
-vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
-
--- Better J behavior
-vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
-
--- Quick file navigation
-vim.keymap.set("n", "<leader>fe", ":Explore<CR>", { desc = "Open file explorer" })
-vim.keymap.set("n", "<leader>ff", ":find ", { desc = "Find file" })
-vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
+-- Performance improvements
+vim.opt.redrawtime = 10000
+vim.opt.maxmempattern = 20000
 
 -- ============================================================================
--- USEFUL FUNCTIONS
+-- ## USEFUL FUNCTIONS
 -- ============================================================================
-
--- Copy full file-path
-vim.keymap.set("n", "<leader>fp", function()
-  local path = vim.fn.expand("%:p")
-  vim.fn.setreg("+", path)
-  print("file:", path)
-end)
 
 -- Basic autocommands
 local augroup = vim.api.nvim_create_augroup("UserConfig", {})
@@ -187,24 +140,28 @@ vim.api.nvim_create_autocmd("BufReadPost", {
   end,
 })
 
--- Set filetype-specific settings
-vim.api.nvim_create_autocmd("FileType", {
+-- Auto-resize splits when window is resized
+vim.api.nvim_create_autocmd("VimResized", {
   group = augroup,
-  pattern = {"python" },
   callback = function()
-    vim.opt_local.tabstop = 4
-    vim.opt_local.shiftwidth = 4
+    vim.cmd("tabdo wincmd =")
   end,
 })
 
-vim.api.nvim_create_autocmd("FileType", {
+-- Create directories when saving files
+vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup,
-  pattern = { "javascript", "typescript", "json", "html", "css", "lua" },
   callback = function()
-    vim.opt_local.tabstop = 2
-    vim.opt_local.shiftwidth = 2
+    local dir = vim.fn.expand('<afile>:p:h')
+    if vim.fn.isdirectory(dir) == 0 then
+      vim.fn.mkdir(dir, 'p')
+    end
   end,
 })
+
+-- ============================================================================
+-- ## TERMINAL
+-- ============================================================================
 
 -- Auto-close terminal when process exits
 vim.api.nvim_create_autocmd("TermClose", {
@@ -226,53 +183,8 @@ vim.api.nvim_create_autocmd("TermOpen", {
   end,
 })
 
--- Auto-resize splits when window is resized
-vim.api.nvim_create_autocmd("VimResized", {
-  group = augroup,
-  callback = function()
-    vim.cmd("tabdo wincmd =")
-  end,
-})
-
-
--- Create directories when saving files
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = augroup,
-  callback = function()
-    local dir = vim.fn.expand('<afile>:p:h')
-    if vim.fn.isdirectory(dir) == 0 then
-      vim.fn.mkdir(dir, 'p')
-    end
-  end,
-})
-
--- Command-line completion
-vim.opt.wildmenu = true
-vim.opt.wildmode = "longest:full,full"
-vim.opt.wildignore:append({ "*.o", "*.obj", "*.pyc", "*.class", "*.jar" })
-
--- Better diff options
-vim.opt.diffopt:append("linematch:60")
-
--- Performance improvements
-vim.opt.redrawtime = 10000
-vim.opt.maxmempattern = 20000
-
--- Create undo directory if it doesn't exist
-local undodir = vim.fn.expand("~/.vim/undodir")
-if vim.fn.isdirectory(undodir) == 0 then
-  vim.fn.mkdir(undodir, "p")
-end
-
 -- ============================================================================
--- TERMINAL
--- ============================================================================
-
-vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
-vim.keymap.set("t", "<C-d>", "<C-\\><C-n> | :bd!<CR>", { desc = "Close terminal" })
-
--- ============================================================================
--- STATUSLINE
+-- ## STATUS LINE
 -- ============================================================================
 
 -- Git branch function
@@ -359,8 +271,8 @@ local function setup_dynamic_statusline()
       " │ ",
       "%f%h%m%r",
       " │ ",
-      "%{v:lua.git_branch()}",
-      " │ ",
+      -- "%{v:lua.git_branch()}",
+      -- " │ ",
       "%{v:lua.file_size()}",
       " │ ",
       "%{v:lua.lsp_status()}",
@@ -373,16 +285,35 @@ local function setup_dynamic_statusline()
 
   vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"}, {
     callback = function()
-      vim.opt_local.statusline = "  %f %h%m%r │ %{v:lua.file_type()} | %=  %l:%c   %P "
+      vim.opt_local.statusline = "  %f%h%m%r │ %=  %l:%c   %P "
     end
   })
 end
 
--- setup_dynamic_statusline()
+setup_dynamic_statusline()
 
 -- ============================================================================
--- LSP & Languages
+-- ## LSP & Languages
 -- ============================================================================
+
+-- Set filetype-specific settings
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup,
+  pattern = {"python" },
+  callback = function()
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+  end,
+})
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup,
+  pattern = { "javascript", "typescript", "json", "html", "css", "lua" },
+  callback = function()
+    vim.opt_local.tabstop = 2
+    vim.opt_local.shiftwidth = 2
+  end,
+})
 
 -- Function to find project root
 local function find_root(patterns)
@@ -411,7 +342,6 @@ vim.api.nvim_create_autocmd('FileType', {
   callback = setup_shell_lsp,
   desc = 'Start shell LSP'
 })
-
 
 -- Python LSP setup
 local function setup_python_lsp()
@@ -444,7 +374,6 @@ vim.api.nvim_create_autocmd('FileType', {
   desc = 'Start Python LSP'
 })
 
-
 -- Go LSP setup
 local function setup_go_lsp()
     vim.lsp.start({
@@ -475,19 +404,19 @@ local function format_code()
   local bufnr = vim.api.nvim_get_current_buf()
   local filename = vim.api.nvim_buf_get_name(bufnr)
   local filetype = vim.bo[bufnr].filetype
-  
+
   -- Save cursor position
   local cursor_pos = vim.api.nvim_win_get_cursor(0)
-  
+
   if filetype == 'python' or filename:match('%.py$') then
     if filename == '' then
       print("Save the file first before formatting Python")
       return
     end
-    
+
     local black_cmd = "black --quiet " .. vim.fn.shellescape(filename)
     local black_result = vim.fn.system(black_cmd)
-    
+
     if vim.v.shell_error == 0 then
       vim.cmd('checktime')
       vim.api.nvim_win_set_cursor(0, cursor_pos)
@@ -504,10 +433,10 @@ local function format_code()
       print("Save the file first before formatting")
       return
     end
-    
+
     local black_cmd = "gofmt -w " .. vim.fn.shellescape(filename)
     local black_result = vim.fn.system(black_cmd)
-    
+
     if vim.v.shell_error == 0 then
       vim.cmd('checktime')
       vim.api.nvim_win_set_cursor(0, cursor_pos)
@@ -518,14 +447,14 @@ local function format_code()
       return
     end
   end
-  
+
   if filetype == 'sh' or filetype == 'bash' or filename:match('%.sh$') then
     local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     local content = table.concat(lines, '\n')
-    
+
     local cmd = {'shfmt', '-i', '2', '-ci', '-sr'}  -- 2 spaces, case indent, space redirects
     local result = vim.fn.system(cmd, content)
-    
+
     if vim.v.shell_error == 0 then
       local formatted_lines = vim.split(result, '\n')
       if formatted_lines[#formatted_lines] == '' then
@@ -540,7 +469,7 @@ local function format_code()
       return
     end
   end
-  
+
   print("No formatter available for " .. filetype)
 end
 
@@ -607,3 +536,114 @@ vim.api.nvim_create_user_command('LspInfo', function()
     end
   end
 end, { desc = 'Show LSP client info' })
+
+-- ===================================================================
+-- ## Key mappings
+-- ===================================================================
+
+vim.g.mapleader = " "                              -- Set leader key to space
+vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
+
+-- Search
+vim.keymap.set("n", "<leader>ss", "/", { desc = "Clear search highlights" })
+vim.keymap.set("n", "<leader>sc", ":nohlsearch<CR>", { desc = "Clear search highlights" })
+
+-- Y to EOL
+vim.keymap.set("n", "Y", "y$", { desc = "Yank to the end of line" })
+
+-- Delete without yanking
+vim.keymap.set({ "n", "v" }, "<leader>d", '"_d', { desc = "Delete without yanking" })
+
+-- Center screen when jumping
+vim.keymap.set("n", "n", "nzzzv", { desc = "Next search result (centered)" })
+vim.keymap.set("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down (centered)" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up (centered)" })
+
+-- Buffer navigation
+vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
+vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
+vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { desc = "Delete buffer" })
+vim.keymap.set("n", "<leader>`", ":b#<CR>", { desc = "Previous active buffer" })
+
+-- Window navigation
+vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to bottom window" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to top window" })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
+
+-- Window splitting
+vim.keymap.set("n", "<leader>wv", ":vsplit<CR>", { desc = "Split window vertically" })
+vim.keymap.set("n", "<leader>wh", ":split<CR>", { desc = "Split window horizontally" })
+vim.keymap.set("n", "<leader>wd", ":close<CR>", { desc = "Split window horizontally" })
+
+-- Window resizing
+vim.keymap.set("n", "<C-Up>", ":resize +2<CR>", { desc = "Increase window height" })
+vim.keymap.set("n", "<C-Down>", ":resize -2<CR>", { desc = "Decrease window height" })
+vim.keymap.set("n", "<C-Left>", ":vertical resize -2<CR>", { desc = "Decrease window width" })
+vim.keymap.set("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase window width" })
+
+-- Move lines up/down
+vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down" })
+vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up" })
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+
+-- Better indenting in visual mode
+vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect" })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
+
+-- Better J behavior
+vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
+
+-- Quick file navigation
+vim.keymap.set("n", "<leader>fe", ":Explore<CR>", { desc = "Open file explorer" })
+vim.keymap.set("n", "<leader>ff", ":find ", { desc = "Find file" })
+vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
+
+-- Terminal
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
+vim.keymap.set("t", "<C-d>", "<C-\\><C-n> | :bd!<CR>", { desc = "Close terminal" })
+
+-- Copy full file-path
+vim.keymap.set("n", "<leader>fp", function()
+  local path = vim.fn.expand("%:p")
+  vim.fn.setreg("+", path)
+  print("file:", path)
+end)
+
+-- ===================================================================
+-- ## Package Manager Lazy
+-- ===================================================================
+
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out, "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
+  end
+end
+vim.opt.rtp:prepend(lazypath)
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = "\\"
+
+-- Setup lazy.nvim
+require("lazy").setup({
+  spec = {
+    -- add your plugins here
+  },
+  -- Configure any other settings here. See the documentation for more details.
+  -- colorscheme that will be used when installing plugins.
+  install = { colorscheme = { "habamax" } },
+  -- automatically check for plugin updates
+  checker = { enabled = true },
+})
