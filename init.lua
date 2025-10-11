@@ -599,7 +599,7 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
 vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
 
 -- Quick file navigation
-vim.keymap.set("n", "<leader>fe", ":Explore<CR>", { desc = "Open file explorer" })
+vim.keymap.set("n", "<leader>fe", ":lua MiniFiles.open()<CR>", { desc = "Open file explorer" })
 vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
 -- Function to open the recent files picker
@@ -651,11 +651,12 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   spec = {
     -- add your plugins here
-    { 'nvim-mini/mini.pairs', version = '*', opts = {} },
-    { 'nvim-mini/mini.bufremove', version = '*', opts = {} },
-    { 'nvim-mini/mini.diff', version = '*', opts = { view = { style = 'sign' } } },
-    { 'nvim-mini/mini.pick', version = '*', opts = {} },
-    { 'nvim-mini/mini.visits', version = '*', opts = {} },
+    { 'nvim-mini/mini.pairs', version = '*', opts = {} }, -- auto pairs
+    { 'nvim-mini/mini.bufremove', version = '*', opts = {} }, -- better buffer kill behavior
+    { 'nvim-mini/mini.diff', version = '*', opts = { view = { style = 'sign' } } }, -- git diff
+    { 'nvim-mini/mini.pick', version = '*', opts = {} }, -- picker
+    { 'nvim-mini/mini.files', version = '*', opts = {} }, -- picker
+    { 'nvim-mini/mini.visits', version = '*', opts = {} }, -- for recent files
     { 'nvim-mini/mini.extra', version = '*', opts = {} }, -- for extra pickers
   },
   -- Configure any other settings here. See the documentation for more details.
