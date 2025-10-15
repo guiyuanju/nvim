@@ -68,7 +68,7 @@ vim.opt.hidden = true -- allow hidden buffers
 vim.opt.errorbells = false -- no error bells
 vim.opt.backspace = "indent,eol,start" -- better backspace behavior
 vim.opt.autochdir = false -- auto change directory or not
-vim.opt.iskeyword:append("-") -- treat dash as part of word
+-- vim.opt.iskeyword:append("-") -- treat dash as part of word
 vim.opt.path:append("**") -- include subdirectories in search
 vim.opt.selection = "inclusive" -- selection behavior
 vim.opt.mouse = "a" -- enable mouse support
@@ -272,95 +272,6 @@ end
 setup_dynamic_statusline()
 
 -- ===================================================================
--- ## Key mappings
--- ===================================================================
-
-vim.g.mapleader = " "                              -- Set leader key to space
-vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
-
--- Search
-vim.keymap.set("n", "<leader>ss", ":Pick buf_lines<CR>", { desc = "Seach buffer lines" })
-vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
-vim.keymap.set("n", "<leader>sc", ":nohlsearch<CR>", { desc = "Clear search highlights" })
-
--- Y to EOL
-vim.keymap.set("n", "Y", "y$", { desc = "Yank to the end of line" })
-
--- Delete without yanking
-vim.keymap.set({ "n", "v" }, "<leader>d", '"_d', { desc = "Delete without yanking" })
-
--- Center screen when jumping
-vim.keymap.set("n", "n", "nzzzv", { desc = "Next search result (centered)" })
-vim.keymap.set("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
-vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down (centered)" })
-vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up (centered)" })
-
--- Buffer navigation
-vim.keymap.set("n", "<leader>bb", ":Pick buffers<CR>", { desc = "Next buffer" })
-vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
-vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
-vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { desc = "Delete buffer" })
-vim.keymap.set("n", "<leader>`", ":b#<CR>", { desc = "Previous active buffer" })
-
--- Window navigation
-vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
-vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to bottom window" })
-vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to top window" })
-vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
-
--- Window splitting
-vim.keymap.set("n", "<leader>wv", ":vsplit<CR>", { desc = "Split window vertically" })
-vim.keymap.set("n", "<leader>wh", ":split<CR>", { desc = "Split window horizontally" })
-vim.keymap.set("n", "<leader>wd", ":close<CR>", { desc = "Split window horizontally" })
-
--- Window resizing
-vim.keymap.set("n", "<C-Up>", ":resize +2<CR>", { desc = "Increase window height" })
-vim.keymap.set("n", "<C-Down>", ":resize -2<CR>", { desc = "Decrease window height" })
-vim.keymap.set("n", "<C-Left>", ":vertical resize -2<CR>", { desc = "Decrease window width" })
-vim.keymap.set("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase window width" })
-
--- Move lines up/down
-vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down" })
-vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up" })
-vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
-vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
-
--- Better indenting in visual mode
-vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect" })
-vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
-
--- Better J behavior
-vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
-
--- Quick file navigation
-vim.keymap.set("n", "<leader>fe", ":lua MiniFiles.open()<CR>", { desc = "Open file explorer" })
-vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
-vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
--- Function to open the recent files picker
-local function open_recent_files_picker()
-  MiniPick.start({ source = { items = MiniVisits.list_paths() } })
-end
-vim.keymap.set('n', '<leader>fr', open_recent_files_picker, { desc = 'Open recent files picker' })
-
--- Terminal
-vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
-vim.keymap.set("t", "<C-d>", "<C-\\><C-n> | :bd!<CR>", { desc = "Close terminal" })
-
--- Copy full file-path
-vim.keymap.set("n", "<leader>fp", function()
-  local path = vim.fn.expand("%:p")
-  vim.fn.setreg("+", path)
-  print("file:", path)
-end)
-
--- Picker
-vim.keymap.set("n", "<leader>pp", ":Pick resume<CR>")
-vim.keymap.set("n", "<leader>pc", ":Pick commands<CR>")
-vim.keymap.set("n", "<leader>pd", ":Pick diagnostic<CR>")
-vim.keymap.set("n", "<leader>pg", ":Pick git_commits<CR>")
-vim.keymap.set("n", "<leader>ph", ":Pick history<CR>")
-
--- ===================================================================
 -- ## Package Manager Lazy
 -- ===================================================================
 
@@ -391,6 +302,14 @@ require("lazy").setup({
     { 'nvim-mini/mini.pick', version = '*', opts = {} }, -- picker
     { 'nvim-mini/mini.files', version = '*', opts = {} }, -- picker
     { 'nvim-mini/mini.visits', version = '*', opts = {} }, -- for recent files
+    {
+      "NeogitOrg/neogit",
+      dependencies = {
+        "nvim-lua/plenary.nvim",         -- required
+        "sindrets/diffview.nvim",        -- optional - Diff integration
+        "nvim-mini/mini.pick",           -- optional
+      },
+    },
     { 'nvim-mini/mini.extra', version = '*', opts = {} }, -- for extra pickers
     -- LSP
     { 'neovim/nvim-lspconfig' }, -- no opts, no setup
@@ -416,7 +335,7 @@ require("lazy").setup({
         -- C-k: Toggle signature help (if signature.enabled = true)
         -- See :h blink-cmp-config-keymap for defining your own keymap
         keymap = {
-          preset = 'super-tab',
+          preset = 'enter',
           ['<C-k>'] = { 'show_documentation' },
         },
         appearance = {
@@ -483,6 +402,14 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
+vim.api.nvim_create_autocmd("FileType", {
+  group = augroup,
+  pattern = {"go"},
+  callback = function()
+    vim.opt_local.makeprg = 'go run .'
+  end,
+})
+
 -- Function to find project root
 local function find_root(patterns)
   local path = vim.fn.expand('%:p:h')
@@ -536,6 +463,9 @@ vim.api.nvim_create_autocmd("BufWritePre", {
   end
 })
 
+-- rust LSP setup
+vim.lsp.enable('rust_analyzer')
+
 -- LSP keymaps 
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(event)
@@ -553,13 +483,14 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- Code actions
     vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-    vim.keymap.set('n', '<leader>br', vim.lsp.buf.rename, opts)
+    vim.keymap.set('n', '<leader>cr', vim.lsp.buf.rename, opts)
 
     -- Diagnostics
-    vim.keymap.set('n', '<leader>nd', vim.diagnostic.goto_next, opts)
-    vim.keymap.set('n', '<leader>pd', vim.diagnostic.goto_prev, opts)
     vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
     vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
+
+    vim.keymap.set('n', '<leader>ls', ": Pick lsp scope='document_symbol'<CR>", opts)
+    vim.keymap.set('n', '<leader>ld', ": Pick diagnostic<CR>", opts)
   end,
 })
 
@@ -593,4 +524,128 @@ vim.api.nvim_create_user_command('LspInfo', function()
     end
   end
 end, { desc = 'Show LSP client info' })
+
+-- ===================================================================
+-- ## Key mappings
+-- ===================================================================
+
+vim.g.mapleader = " "                              -- Set leader key to space
+vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
+
+-- Search
+vim.keymap.set("n", "<leader>ss", ":Pick buf_lines<CR>", { desc = "Seach buffer lines" })
+vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
+vim.keymap.set("n", "<leader>sc", ":nohlsearch<CR>", { desc = "Clear search highlights" })
+
+-- Y to EOL
+vim.keymap.set("n", "Y", "y$", { desc = "Yank to the end of line" })
+
+-- Delete without yanking
+vim.keymap.set({ "n", "v" }, "<leader>d", '"_d', { desc = "Delete without yanking" })
+
+-- Center screen when jumping
+vim.keymap.set("n", "n", "nzzzv", { desc = "Next search result (centered)" })
+vim.keymap.set("n", "N", "Nzzzv", { desc = "Previous search result (centered)" })
+vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down (centered)" })
+vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up (centered)" })
+
+-- Buffer navigation
+vim.keymap.set("n", "<leader>bb", ":Pick buffers<CR>", { desc = "Next buffer" })
+vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
+vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
+vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { desc = "Delete buffer" })
+vim.keymap.set("n", "<leader>bD", ":bdelete!<CR>", { desc = "Delete buffer" })
+vim.keymap.set("n", "<leader>`", ":b#<CR>", { desc = "Previous active buffer" })
+
+-- Window navigation
+vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to bottom window" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to top window" })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
+
+-- Window splitting
+vim.keymap.set("n", "<leader>wv", ":vsplit<CR>", { desc = "Split window vertically" })
+vim.keymap.set("n", "<leader>wh", ":split<CR>", { desc = "Split window horizontally" })
+vim.keymap.set("n", "<leader>wd", ":close<CR>", { desc = "Split window horizontally" })
+
+-- Window resizing
+vim.keymap.set("n", "<C-Up>", ":resize +2<CR>", { desc = "Increase window height" })
+vim.keymap.set("n", "<C-Down>", ":resize -2<CR>", { desc = "Decrease window height" })
+vim.keymap.set("n", "<C-Left>", ":vertical resize -2<CR>", { desc = "Decrease window width" })
+vim.keymap.set("n", "<C-Right>", ":vertical resize +2<CR>", { desc = "Increase window width" })
+
+-- Move lines up/down
+vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "Move line down" })
+vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "Move line up" })
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "Move selection down" })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "Move selection up" })
+
+-- Better indenting in visual mode
+vim.keymap.set("v", "<", "<gv", { desc = "Indent left and reselect" })
+vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
+
+-- Better J behavior
+vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
+
+-- Quick file navigation
+vim.keymap.set("n", "<leader>fe", ":lua MiniFiles.open()<CR>", { desc = "Open file explorer" })
+vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
+vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
+-- Function to open the recent files picker
+local function open_recent_files_picker()
+  MiniPick.start({ source = { items = MiniVisits.list_paths() } })
+end
+vim.keymap.set('n', '<leader>fr', open_recent_files_picker, { desc = 'Open recent files picker' })
+
+-- Terminal
+local terminal = nil
+local terminal_height = 15
+local function toggle_terminal()
+  if terminal and not vim.api.nvim_buf_is_valid(terminal) then
+    terminal = nil
+  end
+
+  -- no terminal, create new
+  if terminal == nil then
+    vim.cmd("split")
+    vim.cmd("terminal")
+    vim.api.nvim_win_set_height(0, terminal_height)
+    terminal = vim.api.nvim_get_current_buf()
+    return
+  end
+
+  if vim.api.nvim_buf_is_valid(terminal) then
+    local winid = vim.fn.bufwinid(terminal)
+    if winid ~= -1 then
+      -- visible, hide it
+      vim.api.nvim_win_close(winid, true)
+    else
+      -- hidden, show it
+      vim.cmd("sbuffer " .. terminal)
+      vim.api.nvim_win_set_height(0, terminal_height)
+    end
+    return
+  end
+end
+
+vim.keymap.set("n", "<leader>t", toggle_terminal)
+vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
+vim.keymap.set("t", "<C-d>", "<C-\\><C-n> | :bd!<CR>", { desc = "Close terminal" })
+
+-- Copy full file-path
+vim.keymap.set("n", "<leader>fp", function()
+  local path = vim.fn.expand("%:p")
+  vim.fn.setreg("+", path)
+  print("file:", path)
+end)
+
+-- Picker
+vim.keymap.set("n", "<leader>pp", ":Pick resume<CR>")
+vim.keymap.set("n", "<leader>pc", ":Pick commands<CR>")
+vim.keymap.set("n", "<leader>pd", ":Pick diagnostic<CR>")
+vim.keymap.set("n", "<leader>pg", ":Pick git_commits<CR>")
+vim.keymap.set("n", "<leader>ph", ":Pick history<CR>")
+
+-- Git
+vim.keymap.set("n", "<leader>g", ":Neogit<CR>")
 
