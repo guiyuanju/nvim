@@ -300,8 +300,18 @@ require("lazy").setup({
     { 'nvim-mini/mini.bufremove', version = '*', opts = {} }, -- better buffer kill behavior
     { 'nvim-mini/mini.diff', version = '*', opts = { view = { style = 'sign' } } }, -- git diff
     { 'nvim-mini/mini.pick', version = '*', opts = {} }, -- picker
-    { 'nvim-mini/mini.files', version = '*', opts = {} }, -- picker
+    { 'nvim-mini/mini.files', version = '*', opts = {} }, -- file picker
     { 'nvim-mini/mini.visits', version = '*', opts = {} }, -- for recent files
+    { 'nvim-mini/mini.extra', version = '*', opts = {} }, -- for extra pickers
+    {
+      'stevearc/oil.nvim',
+      opts = {
+        default_file_explorer = true,
+        columns = { "permissions", "size", "mtime" },
+        delete_to_trash = true,
+      },
+      lazy = false
+    },
     {
       "NeogitOrg/neogit",
       dependencies = {
@@ -310,30 +320,15 @@ require("lazy").setup({
         "nvim-mini/mini.pick",           -- optional
       },
     },
-    { 'nvim-mini/mini.extra', version = '*', opts = {} }, -- for extra pickers
     -- LSP
     { 'neovim/nvim-lspconfig' }, -- no opts, no setup
     { 'mason-org/mason.nvim', opts = {} },
     -- Completion
     {
       'saghen/blink.cmp',
-      -- optional: provides snippets for the snippet source
       dependencies = {},
-      -- use a release tag to download pre-built binaries
       version = '1.*',
-      ---@module 'blink.cmp'
-      ---@type blink.cmp.Config
       opts = {
-        -- 'default' (recommended) for mappings similar to built-in completions (C-y to accept)
-        -- 'super-tab' for mappings similar to vscode (tab to accept)
-        -- 'enter' for enter to accept
-        -- 'none' for no mappings
-        -- All presets have the following mappings:
-        -- C-space: Open menu or open docs if already open
-        -- C-n/C-p or Up/Down: Select next/previous item
-        -- C-e: Hide menu
-        -- C-k: Toggle signature help (if signature.enabled = true)
-        -- See :h blink-cmp-config-keymap for defining your own keymap
         keymap = {
           preset = 'enter',
           ['<C-k>'] = { 'show_documentation' },
@@ -341,10 +336,7 @@ require("lazy").setup({
         appearance = {
           nerd_font_variant = 'mono'
         },
-        -- (Default) Only show the documentation popup when manually triggered
         completion = { documentation = { auto_show = false } },
-        -- Default list of enabled providers defined so that you can extend it
-        -- elsewhere in your config, without redefining it, due to `opts_extend`
         sources = {
           default = { 'lsp', 'path', 'snippets', 'buffer' },
         },
@@ -355,6 +347,7 @@ require("lazy").setup({
     -- Color Schemes
     { 'olimorris/onedarkpro.nvim' },
     { 'catppuccin/nvim' },
+    { "nyoom-engineering/oxocarbon.nvim" },
   },
   -- Configure any other settings here. See the documentation for more details.
   -- colorscheme that will be used when installing plugins.
@@ -366,6 +359,7 @@ require("lazy").setup({
 -- Color scheme
 vim.cmd.colorscheme(
   "catppuccin"
+  -- "oxocarbon"
   -- "onedark"
   -- "default"
   -- "delek"
@@ -489,8 +483,9 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
     vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
 
-    vim.keymap.set('n', '<leader>ls', ": Pick lsp scope='document_symbol'<CR>", opts)
-    vim.keymap.set('n', '<leader>ld', ": Pick diagnostic<CR>", opts)
+    vim.keymap.set('n', '<leader><leader>', ": Pick lsp scope='workspace_symbol'<CR>", opts)
+    vim.keymap.set('n', '<leader>sd', ":Pick diagnostic<CR>", opts)
+    vim.keymap.set('n', '<leader>sr', ":Pick lsp scope='references<CR>'", opts)
   end,
 })
 
@@ -533,7 +528,7 @@ vim.g.mapleader = " "                              -- Set leader key to space
 vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
 
 -- Search
-vim.keymap.set("n", "<leader>ss", ":Pick buf_lines<CR>", { desc = "Seach buffer lines" })
+vim.keymap.set("n", "<leader>ss", ":Pick buf_lines scope='current'<CR>", { desc = "Seach buffer lines" })
 vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
 vim.keymap.set("n", "<leader>sc", ":nohlsearch<CR>", { desc = "Clear search highlights" })
 
@@ -588,7 +583,7 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
 vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
 
 -- Quick file navigation
-vim.keymap.set("n", "<leader>fe", ":lua MiniFiles.open()<CR>", { desc = "Open file explorer" })
+vim.keymap.set("n", "<leader>fe", ":Oil<CR>", { desc = "Open file explorer" })
 vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
 -- Function to open the recent files picker
@@ -596,6 +591,7 @@ local function open_recent_files_picker()
   MiniPick.start({ source = { items = MiniVisits.list_paths() } })
 end
 vim.keymap.set('n', '<leader>fr', open_recent_files_picker, { desc = 'Open recent files picker' })
+-- vim.keymap.set('n', '<leader>fr', function() Snacks.picker.recent() end, { desc = 'Open recent files picker' })
 
 -- Terminal
 local terminal = nil
@@ -639,13 +635,5 @@ vim.keymap.set("n", "<leader>fp", function()
   print("file:", path)
 end)
 
--- Picker
-vim.keymap.set("n", "<leader>pp", ":Pick resume<CR>")
-vim.keymap.set("n", "<leader>pc", ":Pick commands<CR>")
-vim.keymap.set("n", "<leader>pd", ":Pick diagnostic<CR>")
-vim.keymap.set("n", "<leader>pg", ":Pick git_commits<CR>")
-vim.keymap.set("n", "<leader>ph", ":Pick history<CR>")
-
 -- Git
 vim.keymap.set("n", "<leader>g", ":Neogit<CR>")
-
