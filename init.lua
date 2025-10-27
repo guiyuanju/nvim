@@ -344,7 +344,36 @@ require("lazy").setup({
       },
       opts_extend = { "sources.default" }
     },
-    -- Color Schemes
+    -- {
+      --   "folke/trouble.nvim",
+      --   opts = {}, -- for default options, refer to the configuration section for custom setup.
+      --   cmd = "Trouble",
+      -- },
+    {
+      "obsidian-nvim/obsidian.nvim",
+      version = "*", -- recommended, use latest release instead of latest commit
+      ft = "markdown",
+      -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
+      -- event = {
+        --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
+        --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
+        --   -- refer to `:h file-pattern` for more examples
+        --   "BufReadPre path/to/my-vault/*.md",
+        --   "BufNewFile path/to/my-vault/*.md",
+        -- },
+        ---@module 'obsidian'
+        ---@type obsidian.config
+      opts = {
+        workspaces = {
+          {
+            name = "personal",
+            path = "/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes",
+          },
+        },
+        -- see below for full list of options 👇
+      },
+    },
+    --Color Schemes
     { 'olimorris/onedarkpro.nvim' },
     { 'catppuccin/nvim' },
     { "nyoom-engineering/oxocarbon.nvim" },
@@ -465,12 +494,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(event)
     local opts = {buffer = event.buf}
 
-    -- Navigation
-    vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-    vim.keymap.set('n', 'gs', vim.lsp.buf.declaration, opts)
-    vim.keymap.set('n', 'gr', vim.lsp.buf.references, opts)
-    vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
-
     -- Information
     vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
     vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
@@ -482,10 +505,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- Diagnostics
     vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
     vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
-
-    vim.keymap.set('n', '<leader><leader>', ": Pick lsp scope='workspace_symbol'<CR>", opts)
-    vim.keymap.set('n', '<leader>sd', ":Pick diagnostic<CR>", opts)
-    vim.keymap.set('n', '<leader>sr', ":Pick lsp scope='references<CR>'", opts)
   end,
 })
 
@@ -526,11 +545,6 @@ end, { desc = 'Show LSP client info' })
 
 vim.g.mapleader = " "                              -- Set leader key to space
 vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
-
--- Search
-vim.keymap.set("n", "<leader>ss", ":Pick buf_lines scope='current'<CR>", { desc = "Seach buffer lines" })
-vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
-vim.keymap.set("n", "<leader>sc", ":nohlsearch<CR>", { desc = "Clear search highlights" })
 
 -- Y to EOL
 vim.keymap.set("n", "Y", "y$", { desc = "Yank to the end of line" })
@@ -586,6 +600,7 @@ vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position"
 vim.keymap.set("n", "<leader>fe", ":Oil<CR>", { desc = "Open file explorer" })
 vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
+vim.keymap.set("n", "<leader>fs", ":w<CR>")
 -- Function to open the recent files picker
 local function open_recent_files_picker()
   MiniPick.start({ source = { items = MiniVisits.list_paths() } })
@@ -625,6 +640,7 @@ local function toggle_terminal()
 end
 
 vim.keymap.set("n", "<leader>t", toggle_terminal)
+vim.keymap.set({"n", "t", "i", "v"}, "<C-/>", toggle_terminal)
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
 vim.keymap.set("t", "<C-d>", "<C-\\><C-n> | :bd!<CR>", { desc = "Close terminal" })
 
@@ -637,3 +653,40 @@ end)
 
 -- Git
 vim.keymap.set("n", "<leader>g", ":Neogit<CR>")
+
+-- Trouble
+-- vim.keymap.set("n", "<leader>lD", ":Trouble diagnostics toggle<CR>")
+-- vim.keymap.set("n", "<leader>ld", ":Trouble diagnostics toggle filter.buf=0<CR>")
+-- vim.keymap.set("n", "<leader>ls", ":Trouble symbols toggle focus=false<CR>")
+-- vim.keymap.set("n", "<leader>lL", ":Trouble lsp toggle focus=false win.position=right<CR>")
+-- vim.keymap.set("n", "<leader>lL", ":Trouble loclist toggle<CR>")
+-- vim.keymap.set("n", "<leader>lq", ":Trouble qflist toggle<CR>")
+
+-- Search
+-- List (Search)
+vim.keymap.set("n", "<leader>sb", function() MiniExtra.pickers.buf_lines({ scope = 'current', preserve_order = false }) end)
+vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
+-- vim.keymap.set("n", "<leader>ss", function() MiniExtra.pickers.lsp({ scope = 'document_symbol' }) end, { desc = "Grep" })
+vim.keymap.set("n", "<leader>ss", ":Pick lsp scope='document_symbol'<CR>")
+-- delete default keybindings
+if not vim.fn.empty(vim.fn.maparg("n", "grr")) then -- prevent :source error
+  vim.keymap.del("n", "grr")
+  vim.keymap.del("n", "gri")
+  vim.keymap.del("n", "grt")
+  vim.keymap.del("n", "grn")
+  vim.keymap.del("n", "gra")
+end
+vim.keymap.set("n", "gr", ":Pick lsp scope='references'<CR>")
+vim.keymap.set('n', '<leader>sd', ":Pick diagnostic<CR>", opts)
+vim.keymap.set('n', '<leader>sm', ":Pick keymaps<CR>", opts)
+vim.keymap.set('n', '<leader>p', ":Pick resume<CR>", opts)
+
+-- Jump
+vim.keymap.set("n", "<leader>jc", ":e ~/.config/nvim/init.lua<CR>")
+vim.keymap.set("n", "<leader>jo", function()
+  MiniPick.builtin.files(nil, 
+  { source = {
+    cwd = '/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes' 
+  } })
+end)
+
