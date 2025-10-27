@@ -67,7 +67,7 @@ vim.opt.autowrite = false -- don't auto save
 vim.opt.hidden = true -- allow hidden buffers
 vim.opt.errorbells = false -- no error bells
 vim.opt.backspace = "indent,eol,start" -- better backspace behavior
-vim.opt.autochdir = false -- auto change directory or not
+vim.opt.autochdir = true -- auto change directory or not
 -- vim.opt.iskeyword:append("-") -- treat dash as part of word
 vim.opt.path:append("**") -- include subdirectories in search
 vim.opt.selection = "inclusive" -- selection behavior
