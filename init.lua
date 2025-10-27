@@ -42,7 +42,7 @@ vim.opt.pumheight = 10 -- popup menu height
 vim.opt.pumblend = 10 -- popup menu transparency
 vim.opt.winblend = 10 -- floating window transparency
 vim.opt.winborder = "rounded"
-vim.opt.conceallevel = 0 -- don't hide markup
+vim.opt.conceallevel = 2 -- don't hide markup
 vim.opt.concealcursor = "" -- don't hide cursor line markup
 vim.opt.lazyredraw = true -- don't redraw during macros
 vim.opt.synmaxcol = 300 -- syntax highlighting limit
@@ -56,7 +56,7 @@ vim.opt.undodir = vim.fn.expand("~/.vim/undodir") -- undo directory
 -- Create undo directory if it doesn't exist
 local undodir = vim.fn.expand("~/.vim/undodir")
 if vim.fn.isdirectory(undodir) == 0 then
-  vim.fn.mkdir(undodir, "p")
+	vim.fn.mkdir(undodir, "p")
 end
 -- vim.opt.updatetime = 300 -- faster completion
 vim.opt.timeout = false -- key chord never timeout
@@ -77,8 +77,8 @@ vim.opt.modifiable = true -- allow buffer modifications
 vim.opt.encoding = "UTF-8" -- set encoding
 
 -- Split behavior
-vim.opt.splitbelow = true                          -- Horizontal splits go below
-vim.opt.splitright = true                          -- Vertical splits go right
+vim.opt.splitbelow = true -- Horizontal splits go below
+vim.opt.splitright = true -- Vertical splits go right
 
 -- Command-line completion
 vim.opt.wildmenu = true
@@ -101,41 +101,41 @@ local augroup = vim.api.nvim_create_augroup("UserConfig", {})
 
 -- Highlight yanked text
 vim.api.nvim_create_autocmd("TextYankPost", {
-  group = augroup,
-  callback = function()
-    vim.highlight.on_yank()
-  end,
+	group = augroup,
+	callback = function()
+		vim.highlight.on_yank()
+	end,
 })
 
 -- Return to last edit position when opening files
 vim.api.nvim_create_autocmd("BufReadPost", {
-  group = augroup,
-  callback = function()
-    local mark = vim.api.nvim_buf_get_mark(0, '"')
-    local lcount = vim.api.nvim_buf_line_count(0)
-    if mark[1] > 0 and mark[1] <= lcount then
-      pcall(vim.api.nvim_win_set_cursor, 0, mark)
-    end
-  end,
+	group = augroup,
+	callback = function()
+		local mark = vim.api.nvim_buf_get_mark(0, '"')
+		local lcount = vim.api.nvim_buf_line_count(0)
+		if mark[1] > 0 and mark[1] <= lcount then
+			pcall(vim.api.nvim_win_set_cursor, 0, mark)
+		end
+	end,
 })
 
 -- Auto-resize splits when window is resized
 vim.api.nvim_create_autocmd("VimResized", {
-  group = augroup,
-  callback = function()
-    vim.cmd("tabdo wincmd =")
-  end,
+	group = augroup,
+	callback = function()
+		vim.cmd("tabdo wincmd =")
+	end,
 })
 
 -- Create directories when saving files
 vim.api.nvim_create_autocmd("BufWritePre", {
-  group = augroup,
-  callback = function()
-    local dir = vim.fn.expand('<afile>:p:h')
-    if vim.fn.isdirectory(dir) == 0 then
-      vim.fn.mkdir(dir, 'p')
-    end
-  end,
+	group = augroup,
+	callback = function()
+		local dir = vim.fn.expand("<afile>:p:h")
+		if vim.fn.isdirectory(dir) == 0 then
+			vim.fn.mkdir(dir, "p")
+		end
+	end,
 })
 
 -- ============================================================================
@@ -144,22 +144,22 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 
 -- Auto-close terminal when process exits
 vim.api.nvim_create_autocmd("TermClose", {
-  group = augroup,
-  callback = function()
-    if vim.v.event.status == 0 then
-      vim.api.nvim_buf_delete(0, {})
-    end
-  end,
+	group = augroup,
+	callback = function()
+		if vim.v.event.status == 0 then
+			vim.api.nvim_buf_delete(0, {})
+		end
+	end,
 })
 
 -- Disable line numbers in terminal
 vim.api.nvim_create_autocmd("TermOpen", {
-  group = augroup,
-  callback = function()
-    vim.opt_local.number = false
-    vim.opt_local.relativenumber = false
-    vim.opt_local.signcolumn = "no"
-  end,
+	group = augroup,
+	callback = function()
+		vim.opt_local.number = false
+		vim.opt_local.relativenumber = false
+		vim.opt_local.signcolumn = "no"
+	end,
 })
 
 -- ============================================================================
@@ -168,64 +168,66 @@ vim.api.nvim_create_autocmd("TermOpen", {
 
 -- Git branch function
 local function git_branch()
-  local branch = vim.fn.system("git branch --show-current 2>/dev/null | tr -d '\n'")
-  if branch ~= "" then
-    return branch
-  end
-  return ""
+	local branch = vim.fn.system("git branch --show-current 2>/dev/null | tr -d '\n'")
+	if branch ~= "" then
+		return branch
+	end
+	return ""
 end
 
 -- LSP status
 local function lsp_status()
-  local clients = vim.lsp.get_clients({ bufnr = 0 })
-  if #clients > 0 then
-    return "LSP"
-  end
-  return ""
+	local clients = vim.lsp.get_clients({ bufnr = 0 })
+	if #clients > 0 then
+		return "LSP"
+	end
+	return ""
 end
 
 -- Word count for text files
 local function word_count()
-  local ft = vim.bo.filetype
-  if ft == "markdown" or ft == "text" or ft == "tex" then
-    local words = vim.fn.wordcount().words
-    return words .. " words"
-  end
-  return ""
+	local ft = vim.bo.filetype
+	if ft == "markdown" or ft == "text" or ft == "tex" then
+		local words = vim.fn.wordcount().words
+		return words .. " words"
+	end
+	return ""
 end
 
 -- File size
 local function file_size()
-  local size = vim.fn.getfsize(vim.fn.expand('%'))
-  if size < 0 then return "nil" end
-  if size < 1024 then
-    return size .. "B"
-  elseif size < 1024 * 1024 then
-    return string.format("%.1fK", size / 1024)
-  else
-    return string.format("%.1fM", size / 1024 / 1024)
-  end
+	local size = vim.fn.getfsize(vim.fn.expand("%"))
+	if size < 0 then
+		return "nil"
+	end
+	if size < 1024 then
+		return size .. "B"
+	elseif size < 1024 * 1024 then
+		return string.format("%.1fK", size / 1024)
+	else
+		return string.format("%.1fM", size / 1024 / 1024)
+	end
 end
 
 -- Mode indicators with icons
 local function mode_icon()
-  local mode = vim.fn.mode()
-  local modes = {
-    n = "NORMAL",
-    i = "INSERT",
-    v = "VISUAL",
-    V = "V-LINE",
-    ["\22"] = "V-BLOCK",  -- Ctrl-V
-    c = "COMMAND",
-    s = "SELECT",
-    S = "S-LINE",
-    ["\19"] = "S-BLOCK",  -- Ctrl-S
-    R = "REPLACE",
-    r = "REPLACE",
-    ["!"] = "SHELL",
-    t = "TERMINAL"
-  }
-  return modes[mode] or "  " .. mode:upper()
+	local mode = vim.fn.mode()
+	local modes = {
+		n = "NORMAL",
+		i = "INSERT",
+		v = "VISUAL",
+		V = "V-LINE",
+		["\22"] = "V-BLOCK", -- Ctrl-V
+		c = "COMMAND",
+		s = "SELECT",
+		S = "S-LINE",
+		["\19"] = "S-BLOCK", -- Ctrl-S
+		R = "REPLACE",
+		r = "REPLACE",
+		["!"] = "SHELL",
+		t = "TERMINAL",
+	}
+	return modes[mode] or "  " .. mode:upper()
 end
 
 _G.mode_icon = mode_icon
@@ -240,33 +242,33 @@ vim.cmd([[
 
 -- Function to change statusline based on window focus
 local function setup_dynamic_statusline()
-  vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {
-    callback = function()
-    vim.opt_local.statusline = table.concat {
-      "  ",
-      "%#StatusLineBold#",
-      "%{v:lua.mode_icon()}",
-      "%#StatusLine#",
-      " │ ",
-      "%f%h%m%r",
-      " │ ",
-      -- "%{v:lua.git_branch()}",
-      -- " │ ",
-      "%{v:lua.file_size()}",
-      " │ ",
-      "%{v:lua.lsp_status()}",
-      "%=",                     -- Right-align everything after this
-      "%l:%c  %P ",             -- Line:Column and Percentage
-    }
-    end
-  })
-  vim.api.nvim_set_hl(0, "StatusLineBold", { bold = true })
+	vim.api.nvim_create_autocmd({ "WinEnter", "BufEnter" }, {
+		callback = function()
+			vim.opt_local.statusline = table.concat({
+				"  ",
+				"%#StatusLineBold#",
+				"%{v:lua.mode_icon()}",
+				"%#StatusLine#",
+				" │ ",
+				"%f%h%m%r",
+				" │ ",
+				-- "%{v:lua.git_branch()}",
+				-- " │ ",
+				"%{v:lua.file_size()}",
+				" │ ",
+				"%{v:lua.lsp_status()}",
+				"%=", -- Right-align everything after this
+				"%l:%c  %P ", -- Line:Column and Percentage
+			})
+		end,
+	})
+	vim.api.nvim_set_hl(0, "StatusLineBold", { bold = true })
 
-  vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"}, {
-    callback = function()
-      vim.opt_local.statusline = "  %f%h%m%r │ %=  %l:%c   %P "
-    end
-  })
+	vim.api.nvim_create_autocmd({ "WinLeave", "BufLeave" }, {
+		callback = function()
+			vim.opt_local.statusline = "  %f%h%m%r │ %=  %l:%c   %P "
+		end,
+	})
 end
 
 setup_dynamic_statusline()
@@ -278,137 +280,172 @@ setup_dynamic_statusline()
 -- Bootstrap lazy.nvim
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
-  if vim.v.shell_error ~= 0 then
-    vim.api.nvim_echo({
-      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
-      { out, "WarningMsg" },
-      { "\nPress any key to exit..." },
-    }, true, {})
-    vim.fn.getchar()
-    os.exit(1)
-  end
+	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+	local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+	if vim.v.shell_error ~= 0 then
+		vim.api.nvim_echo({
+			{ "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+			{ out, "WarningMsg" },
+			{ "\nPress any key to exit..." },
+		}, true, {})
+		vim.fn.getchar()
+		os.exit(1)
+	end
 end
 vim.opt.rtp:prepend(lazypath)
 
 -- Setup lazy.nvim
 require("lazy").setup({
-  spec = {
-    -- QOL
-    { 'nvim-mini/mini.pairs', version = '*', opts = {} }, -- auto pairs
-    { 'nvim-mini/mini.bufremove', version = '*', opts = {} }, -- better buffer kill behavior
-    { 'nvim-mini/mini.diff', version = '*', opts = { view = { style = 'sign' } } }, -- git diff
-    { 'nvim-mini/mini.pick', version = '*', opts = {} }, -- picker
-    { 'nvim-mini/mini.files', version = '*', opts = {} }, -- file picker
-    { 'nvim-mini/mini.visits', version = '*', opts = {} }, -- for recent files
-    { 'nvim-mini/mini.extra', version = '*', opts = {} }, -- for extra pickers
-    {
-      'stevearc/oil.nvim',
-      opts = {
-        default_file_explorer = true,
-        columns = { "permissions", "size", "mtime" },
-        delete_to_trash = true,
-      },
-      lazy = false
-    },
-    {
-      "NeogitOrg/neogit",
-      dependencies = {
-        "nvim-lua/plenary.nvim",         -- required
-        "sindrets/diffview.nvim",        -- optional - Diff integration
-        "nvim-mini/mini.pick",           -- optional
-      },
-    },
-    -- LSP
-    { 'neovim/nvim-lspconfig' }, -- no opts, no setup
-    { 'mason-org/mason.nvim', opts = {} },
-    -- Completion
-    {
-      'saghen/blink.cmp',
-      dependencies = {},
-      version = '1.*',
-      opts = {
-        keymap = {
-          preset = 'enter',
-          ['<C-k>'] = { 'show_documentation' },
-        },
-        appearance = {
-          nerd_font_variant = 'mono'
-        },
-        completion = { documentation = { auto_show = false } },
-        sources = {
-          default = { 'lsp', 'path', 'snippets', 'buffer' },
-        },
-        fuzzy = { implementation = "prefer_rust_with_warning" }
-      },
-      opts_extend = { "sources.default" }
-    },
-    -- {
-      --   "folke/trouble.nvim",
-      --   opts = {}, -- for default options, refer to the configuration section for custom setup.
-      --   cmd = "Trouble",
-      -- },
-    {
-      "obsidian-nvim/obsidian.nvim",
-      version = "*", -- recommended, use latest release instead of latest commit
-      ft = "markdown",
-      -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
-      -- event = {
-        --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-        --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
-        --   -- refer to `:h file-pattern` for more examples
-        --   "BufReadPre path/to/my-vault/*.md",
-        --   "BufNewFile path/to/my-vault/*.md",
-        -- },
-        ---@module 'obsidian'
-        ---@type obsidian.config
-      opts = {
-        workspaces = {
-          {
-            name = "personal",
-            path = "/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes",
-          },
-        },
-        -- see below for full list of options 👇
-      },
-    },
-    --Color Schemes
-    { 'olimorris/onedarkpro.nvim' },
-    { 'catppuccin/nvim' },
-    { "nyoom-engineering/oxocarbon.nvim" },
-  },
-  -- Configure any other settings here. See the documentation for more details.
-  -- colorscheme that will be used when installing plugins.
-  install = { colorscheme = { "habamax" } },
-  -- automatically check for plugin updates
-  checker = { enabled = true },
+	spec = {
+		-- QOL
+		{ "nvim-mini/mini.pairs", version = "*", opts = {} }, -- auto pairs
+		{ "nvim-mini/mini.bufremove", version = "*", opts = {} }, -- better buffer kill behavior
+		{ "nvim-mini/mini.diff", version = "*", opts = { view = { style = "sign" } } }, -- git diff
+		{ "nvim-mini/mini.pick", version = "*", opts = {} }, -- picker
+		{ "nvim-mini/mini.files", version = "*", opts = {} }, -- file picker
+		{ "nvim-mini/mini.visits", version = "*", opts = {} }, -- for recent files
+		{ "nvim-mini/mini.extra", version = "*", opts = {} }, -- for extra pickers
+		{
+			"stevearc/oil.nvim",
+			opts = {
+				default_file_explorer = true,
+				columns = { "permissions", "size", "mtime" },
+				delete_to_trash = true,
+			},
+			lazy = false,
+		},
+		{
+			"NeogitOrg/neogit",
+			dependencies = {
+				"nvim-lua/plenary.nvim", -- required
+				"sindrets/diffview.nvim", -- optional - Diff integration
+				"nvim-mini/mini.pick", -- optional
+			},
+		},
+		-- LSP
+		{ "neovim/nvim-lspconfig" }, -- no opts, no setup
+		{ "mason-org/mason.nvim", opts = {} },
+		-- Completion
+		{
+			"saghen/blink.cmp",
+			dependencies = {},
+			version = "1.*",
+			opts = {
+				keymap = {
+					preset = "enter",
+					["<C-k>"] = { "show_documentation" },
+				},
+				appearance = {
+					nerd_font_variant = "mono",
+				},
+				completion = { documentation = { auto_show = false } },
+				sources = {
+					default = { "lsp", "path", "snippets", "buffer" },
+				},
+				fuzzy = { implementation = "prefer_rust_with_warning" },
+			},
+			opts_extend = { "sources.default" },
+		},
+		-- {
+		--   "folke/trouble.nvim",
+		--   opts = {}, -- for default options, refer to the configuration section for custom setup.
+		--   cmd = "Trouble",
+		-- },
+		{
+			"folke/snacks.nvim",
+			---@type snacks.Config
+			opts = {
+				image = {
+					resolve = function(path, src)
+						if require("obsidian.api").path_is_note(path) then
+							return require("obsidian.api").resolve_image_path(src)
+						end
+					end,
+				},
+			},
+		},
+		{
+			"obsidian-nvim/obsidian.nvim",
+			version = "*", -- recommended, use latest release instead of latest commit
+			ft = "markdown",
+			lazy = false,
+			opts = {
+				legacy_commands = false,
+				workspaces = {
+					{
+						name = "personal",
+						path = "/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes",
+					},
+				},
+				-- see below for full list of options 👇
+				attachments = {
+					img_folder = "./attachments",
+				},
+				daily_notes = {
+					folder = "4_archived/daily",
+					date_format = nil,
+					alias_format = nil,
+					default_tags = { "daily-notes" },
+					workdays_only = true,
+				},
+			},
+		},
+		{
+			"stevearc/conform.nvim",
+			opts = {
+				formatters_by_ft = {
+					lua = { "stylua" },
+					-- Conform will run multiple formatters sequentially
+					python = { "isort", "black" },
+					-- You can customize some of the format options for the filetype (:help conform.format)
+					rust = { "rustfmt", lsp_format = "fallback" },
+					-- Conform will run the first available formatter
+					javascript = { "prettierd", "prettier", stop_after_first = true },
+					go = { "gofumpt", "goimports" },
+				},
+				format_on_save = {
+					-- These options will be passed to conform.format()
+					timeout_ms = 500,
+					lsp_format = "fallback",
+				},
+			},
+		},
+		--Color Schemes
+		{ "olimorris/onedarkpro.nvim" },
+		{ "catppuccin/nvim" },
+		{ "nyoom-engineering/oxocarbon.nvim" },
+	},
+	-- Configure any other settings here. See the documentation for more details.
+	-- colorscheme that will be used when installing plugins.
+	install = { colorscheme = { "habamax" } },
+	-- automatically check for plugin updates
+	checker = { enabled = true },
 })
 
 -- Color scheme
 vim.cmd.colorscheme(
-  "catppuccin"
-  -- "oxocarbon"
-  -- "onedark"
-  -- "default"
-  -- "delek"
-  -- "desert"
-  -- "elflord"
-  -- "evening"
-  -- "habamax"
-  -- "industry"
-  -- "koehler"
-  -- "lunaperche"
-  -- "morning"
-  -- "murphy"
-  -- "pablo"
-  -- "peachpuff"
-  -- "quiet"
-  -- "ron"
-  -- "shine"
-  -- "slate"
-  -- "torte"
-  -- "zellner"
+	"catppuccin"
+	-- "oxocarbon"
+	-- "onedark"
+	-- "default"
+	-- "delek"
+	-- "desert"
+	-- "elflord"
+	-- "evening"
+	-- "habamax"
+	-- "industry"
+	-- "koehler"
+	-- "lunaperche"
+	-- "morning"
+	-- "murphy"
+	-- "pablo"
+	-- "peachpuff"
+	-- "quiet"
+	-- "ron"
+	-- "shine"
+	-- "slate"
+	-- "torte"
+	-- "zellner"
 )
 
 -- ============================================================================
@@ -417,134 +454,91 @@ vim.cmd.colorscheme(
 
 -- Set filetype-specific settings
 vim.api.nvim_create_autocmd("FileType", {
-  group = augroup,
-  pattern = {"python" },
-  callback = function()
-    vim.opt_local.tabstop = 4
-    vim.opt_local.shiftwidth = 4
-  end,
+	group = augroup,
+	pattern = { "python" },
+	callback = function()
+		vim.opt_local.tabstop = 4
+		vim.opt_local.shiftwidth = 4
+	end,
 })
 
 vim.api.nvim_create_autocmd("FileType", {
-  group = augroup,
-  pattern = {"go"},
-  callback = function()
-    vim.opt_local.makeprg = 'go run .'
-  end,
+	group = augroup,
+	pattern = { "go" },
+	callback = function()
+		vim.opt_local.makeprg = "go run ."
+	end,
 })
 
 -- Function to find project root
 local function find_root(patterns)
-  local path = vim.fn.expand('%:p:h')
-  local root = vim.fs.find(patterns, { path = path, upward = true })[1]
-  return root and vim.fn.fnamemodify(root, ':h') or path
+	local path = vim.fn.expand("%:p:h")
+	local root = vim.fs.find(patterns, { path = path, upward = true })[1]
+	return root and vim.fn.fnamemodify(root, ":h") or path
 end
 
 -- Go LSP setup
-vim.lsp.enable('gopls')
-vim.lsp.config('gopls', {
-  settings = {
-    gopls = {
-      analyses = {
-        unusedparams = true,
-      },
-      staticcheck = true,
-      gofumpt = true,
-    },
-  },
-})
-
--- go auto fmt on save
--- vim.api.nvim_create_autocmd("BufWritePost", {
---   pattern = "*.go",
---   callback = function()
---     -- Format the entire buffer with goimports, handling imports and formatting
---     vim.cmd("silent !goimports -w %")
---   end,
--- })
---
-vim.api.nvim_create_autocmd("BufWritePre", {
-  pattern = "*.go",
-  callback = function()
-    local params = vim.lsp.util.make_range_params()
-    params.context = {only = {"source.organizeImports"}}
-    -- buf_request_sync defaults to a 1000ms timeout. Depending on your
-    -- machine and codebase, you may want longer. Add an additional
-    -- argument after params if you find that you have to write the file
-    -- twice for changes to be saved.
-    -- E.g., vim.lsp.buf_request_sync(0, "textDocument/codeAction", params, 3000)
-    local result = vim.lsp.buf_request_sync(0, "textDocument/codeAction", params)
-    for cid, res in pairs(result or {}) do
-      for _, r in pairs(res.result or {}) do
-        if r.edit then
-          local enc = (vim.lsp.get_client_by_id(cid) or {}).offset_encoding or "utf-16"
-          vim.lsp.util.apply_workspace_edit(r.edit, enc)
-        end
-      end
-    end
-    vim.lsp.buf.format({async = false})
-  end
-})
+vim.lsp.enable("gopls")
 
 -- rust LSP setup
-vim.lsp.enable('rust_analyzer')
+vim.lsp.enable("rust_analyzer")
 
--- LSP keymaps 
-vim.api.nvim_create_autocmd('LspAttach', {
-  callback = function(event)
-    local opts = {buffer = event.buf}
+-- LSP keymaps
+vim.api.nvim_create_autocmd("LspAttach", {
+	callback = function(event)
+		local opts = { buffer = event.buf }
 
-    -- Information
-    vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
-    vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+		-- Information
+		vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
+		vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
 
-    -- Code actions
-    vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-    vim.keymap.set('n', '<leader>cr', vim.lsp.buf.rename, opts)
+		-- Code actions
+		vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+		vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, opts)
 
-    -- Diagnostics
-    vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, opts)
-    vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, opts)
-  end,
+		-- Diagnostics
+		vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts)
+		vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, opts)
+	end,
 })
 
 -- Better LSP UI
 vim.diagnostic.config({
-  virtual_text = { prefix = '●' },
-  signs = true,
-  underline = true,
-  update_in_insert = false,
-  severity_sort = true,
+	virtual_text = { prefix = "●" },
+	signs = true,
+	underline = true,
+	update_in_insert = false,
+	severity_sort = true,
 })
 
 vim.diagnostic.config({
-  signs = {
-    text = {
-      [vim.diagnostic.severity.ERROR] = "✗",
-      [vim.diagnostic.severity.WARN] = "⚠",
-      [vim.diagnostic.severity.INFO] = "ℹ",
-      [vim.diagnostic.severity.HINT] = "💡",
-    }
-  }
+	signs = {
+		text = {
+			[vim.diagnostic.severity.ERROR] = "✗",
+			[vim.diagnostic.severity.WARN] = "⚠",
+			[vim.diagnostic.severity.INFO] = "ℹ",
+			[vim.diagnostic.severity.HINT] = "💡",
+		},
+	},
 })
 
-vim.api.nvim_create_user_command('LspInfo', function()
-  local clients = vim.lsp.get_clients({ bufnr = 0 })
-  if #clients == 0 then
-    print("No LSP clients attached to current buffer")
-  else
-    for _, client in ipairs(clients) do
-      print("LSP: " .. client.name .. " (ID: " .. client.id .. ")")
-    end
-  end
-end, { desc = 'Show LSP client info' })
+vim.api.nvim_create_user_command("LspInfo", function()
+	local clients = vim.lsp.get_clients({ bufnr = 0 })
+	if #clients == 0 then
+		print("No LSP clients attached to current buffer")
+	else
+		for _, client in ipairs(clients) do
+			print("LSP: " .. client.name .. " (ID: " .. client.id .. ")")
+		end
+	end
+end, { desc = "Show LSP client info" })
 
 -- ===================================================================
 -- ## Key mappings
 -- ===================================================================
 
-vim.g.mapleader = " "                              -- Set leader key to space
-vim.g.maplocalleader = " "                         -- Set local leader key (NEW)
+vim.g.mapleader = " " -- Set leader key to space
+vim.g.maplocalleader = " " -- Set local leader key (NEW)
 
 -- Y to EOL
 vim.keymap.set("n", "Y", "y$", { desc = "Yank to the end of line" })
@@ -601,54 +595,52 @@ vim.keymap.set("n", "<leader>fe", ":Oil<CR>", { desc = "Open file explorer" })
 vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
 vim.keymap.set("n", "<leader>fs", ":w<CR>")
--- Function to open the recent files picker
-local function open_recent_files_picker()
-  MiniPick.start({ source = { items = MiniVisits.list_paths() } })
-end
-vim.keymap.set('n', '<leader>fr', open_recent_files_picker, { desc = 'Open recent files picker' })
--- vim.keymap.set('n', '<leader>fr', function() Snacks.picker.recent() end, { desc = 'Open recent files picker' })
+
+-- Adjust LHS and description to your liking
+vim.keymap.set("n", "<leader>fr", ":Pick visit_paths cwd='' recency_weight=0.5<CR>")
+-- vim.keymap.set('n', '<leader>fr', ":Pick visit_paths cwd='' recency_weight=1 filter='core'")
 
 -- Terminal
 local terminal = nil
 local terminal_height = 15
 local function toggle_terminal()
-  if terminal and not vim.api.nvim_buf_is_valid(terminal) then
-    terminal = nil
-  end
+	if terminal and not vim.api.nvim_buf_is_valid(terminal) then
+		terminal = nil
+	end
 
-  -- no terminal, create new
-  if terminal == nil then
-    vim.cmd("split")
-    vim.cmd("terminal")
-    vim.api.nvim_win_set_height(0, terminal_height)
-    terminal = vim.api.nvim_get_current_buf()
-    return
-  end
+	-- no terminal, create new
+	if terminal == nil then
+		vim.cmd("split")
+		vim.cmd("terminal")
+		vim.api.nvim_win_set_height(0, terminal_height)
+		terminal = vim.api.nvim_get_current_buf()
+		return
+	end
 
-  if vim.api.nvim_buf_is_valid(terminal) then
-    local winid = vim.fn.bufwinid(terminal)
-    if winid ~= -1 then
-      -- visible, hide it
-      vim.api.nvim_win_close(winid, true)
-    else
-      -- hidden, show it
-      vim.cmd("sbuffer " .. terminal)
-      vim.api.nvim_win_set_height(0, terminal_height)
-    end
-    return
-  end
+	if vim.api.nvim_buf_is_valid(terminal) then
+		local winid = vim.fn.bufwinid(terminal)
+		if winid ~= -1 then
+			-- visible, hide it
+			vim.api.nvim_win_close(winid, true)
+		else
+			-- hidden, show it
+			vim.cmd("sbuffer " .. terminal)
+			vim.api.nvim_win_set_height(0, terminal_height)
+		end
+		return
+	end
 end
 
 vim.keymap.set("n", "<leader>t", toggle_terminal)
-vim.keymap.set({"n", "t", "i", "v"}, "<C-/>", toggle_terminal)
+vim.keymap.set({ "n", "t", "i", "v" }, "<C-/>", toggle_terminal)
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
 vim.keymap.set("t", "<C-d>", "<C-\\><C-n> | :bd!<CR>", { desc = "Close terminal" })
 
 -- Copy full file-path
 vim.keymap.set("n", "<leader>fp", function()
-  local path = vim.fn.expand("%:p")
-  vim.fn.setreg("+", path)
-  print("file:", path)
+	local path = vim.fn.expand("%:p")
+	vim.fn.setreg("+", path)
+	print("file:", path)
 end)
 
 -- Git
@@ -664,29 +656,33 @@ vim.keymap.set("n", "<leader>g", ":Neogit<CR>")
 
 -- Search
 -- List (Search)
-vim.keymap.set("n", "<leader>sb", function() MiniExtra.pickers.buf_lines({ scope = 'current', preserve_order = false }) end)
+vim.keymap.set("n", "<leader>sb", function()
+	MiniExtra.pickers.buf_lines({ scope = "current", preserve_order = false })
+end)
 vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
 -- vim.keymap.set("n", "<leader>ss", function() MiniExtra.pickers.lsp({ scope = 'document_symbol' }) end, { desc = "Grep" })
 vim.keymap.set("n", "<leader>ss", ":Pick lsp scope='document_symbol'<CR>")
 -- delete default keybindings
 if not vim.fn.empty(vim.fn.maparg("n", "grr")) then -- prevent :source error
-  vim.keymap.del("n", "grr")
-  vim.keymap.del("n", "gri")
-  vim.keymap.del("n", "grt")
-  vim.keymap.del("n", "grn")
-  vim.keymap.del("n", "gra")
+	vim.keymap.del("n", "grr")
+	vim.keymap.del("n", "gri")
+	vim.keymap.del("n", "grt")
+	vim.keymap.del("n", "grn")
+	vim.keymap.del("n", "gra")
 end
 vim.keymap.set("n", "gr", ":Pick lsp scope='references'<CR>")
-vim.keymap.set('n', '<leader>sd', ":Pick diagnostic<CR>", opts)
-vim.keymap.set('n', '<leader>sm', ":Pick keymaps<CR>", opts)
-vim.keymap.set('n', '<leader>p', ":Pick resume<CR>", opts)
+vim.keymap.set("n", "<leader>sd", ":Pick diagnostic<CR>", opts)
+vim.keymap.set("n", "<leader>sm", ":Pick keymaps<CR>", opts)
+vim.keymap.set("n", "<leader>p", ":Pick resume<CR>", opts)
 
 -- Jump
 vim.keymap.set("n", "<leader>jc", ":e ~/.config/nvim/init.lua<CR>")
-vim.keymap.set("n", "<leader>jo", function()
-  MiniPick.builtin.files(nil, 
-  { source = {
-    cwd = '/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes' 
-  } })
-end)
+vim.keymap.set("n", "<leader>jo", ":Obsidian quick_switch<CR>")
 
+-- Obsidian
+vim.keymap.set("n", "<leader>oo", ":Obsidian quick_switch<CR>")
+vim.keymap.set("n", "<leader>op", ":Obsidian paste_img<CR>")
+vim.keymap.set("n", "<leader>ob", ":Obsidian backlinks<CR>")
+vim.keymap.set("n", "<leader>og", ":Obsidian follow_link<CR>")
+vim.keymap.set("n", "<leader>on", ":Obsidian new<CR>")
+vim.keymap.set("n", "<leader>od", ":Obsidian dailies<CR>")
