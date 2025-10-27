@@ -410,6 +410,14 @@ require("lazy").setup({
 				},
 			},
 		},
+		{
+			"gruvw/strudel.nvim",
+			build = "npm install",
+			config = function()
+				require("strudel").setup()
+			end,
+			lazy = false,
+		},
 		--Color Schemes
 		{ "olimorris/onedarkpro.nvim" },
 		{ "catppuccin/nvim" },
@@ -678,6 +686,10 @@ vim.keymap.set("n", "<leader>p", ":Pick resume<CR>", opts)
 -- Jump
 vim.keymap.set("n", "<leader>jc", ":e ~/.config/nvim/init.lua<CR>")
 vim.keymap.set("n", "<leader>jo", ":Obsidian quick_switch<CR>")
+-- vim.keymap.set("n", "<leader>js", ":e ~/Code/Resources/strudel/main.str")
+vim.keymap.set("n", "<leader>js", function()
+	MiniPick.builtin.files(nil, { source = { cwd = "~/Code/Resources/strudel/" } })
+end)
 
 -- Obsidian
 vim.keymap.set("n", "<leader>oo", ":Obsidian quick_switch<CR>")
@@ -686,3 +698,24 @@ vim.keymap.set("n", "<leader>ob", ":Obsidian backlinks<CR>")
 vim.keymap.set("n", "<leader>og", ":Obsidian follow_link<CR>")
 vim.keymap.set("n", "<leader>on", ":Obsidian new<CR>")
 vim.keymap.set("n", "<leader>od", ":Obsidian dailies<CR>")
+
+-- Strudel
+local strudel = require("strudel")
+vim.keymap.set("n", "<leader>ml", strudel.launch, { desc = "Launch Strudel" })
+vim.keymap.set("n", "<leader>mq", strudel.quit, { desc = "Quit Strudel" })
+vim.keymap.set("n", "<leader>mt", strudel.toggle, { desc = "Strudel Toggle Play/Stop" })
+vim.keymap.set("n", "<leader>mu", strudel.update, { desc = "Strudel Update" })
+vim.keymap.set("n", "<leader>ms", strudel.stop, { desc = "Strudel Stop Playback" })
+vim.keymap.set("n", "<leader>mb", strudel.set_buffer, { desc = "Strudel set current buffer" })
+vim.keymap.set("n", "<leader>mx", strudel.execute, { desc = "Strudel set current buffer and update" })
+
+-- Visit labels
+local map_vis = function(keys, call, desc)
+	local rhs = "<Cmd>lua MiniVisits." .. call .. "<CR>"
+	vim.keymap.set("n", "<Leader>" .. keys, rhs, { desc = desc })
+end
+
+map_vis("va", "add_label('core')", "Add label")
+map_vis("vd", "remove_label('core')", "Remove label")
+vim.keymap.set("n", "<leader>vv", ":Pick visit_paths cwd='' filter='core'<CR>") -- all core
+vim.keymap.set("n", "<leader>vV", ":Pick visit_paths cwd=nil filter='core'<CR>") -- cwd core
