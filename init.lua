@@ -333,7 +333,7 @@ require("lazy").setup({
 			opts = {
 				keymap = {
 					preset = "enter",
-					["<C-k>"] = { "show_documentation" },
+					["K"] = { "show_documentation" },
 				},
 				appearance = {
 					nerd_font_variant = "mono",
@@ -719,3 +719,6 @@ map_vis("va", "add_label('core')", "Add label")
 map_vis("vd", "remove_label('core')", "Remove label")
 vim.keymap.set("n", "<leader>vv", ":Pick visit_paths cwd='' filter='core'<CR>") -- all core
 vim.keymap.set("n", "<leader>vV", ":Pick visit_paths cwd=nil filter='core'<CR>") -- cwd core
+
+-- UI
+vim.keymap.set("n", "<leader>uw", ":set wrap!<CR>")
