@@ -736,7 +736,7 @@ end)
 vim.keymap.set("n", "<leader>on", function()
 	local cwd = vim.fn.getcwd()
 	if cwd:find(ob_home, 1, true) ~= 1 then
-		print(cwd .. "outside of obsidian home")
+		print("outside of obsidian home")
 		return
 	end
 	vim.ui.input({ prompt = "name: " }, function(input)
@@ -746,85 +746,6 @@ vim.keymap.set("n", "<leader>on", function()
 		end
 		vim.cmd("new " .. input)
 	end)
-end)
-
-local function insert_my_text(text)
-	-- Get current cursor position (row and col are 0-indexed for API calls)
-	local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-	-- Insert the text at the current cursor position
-	-- We set start_row, start_col, end_row, end_col to the same position
-	-- and provide the text as a table with one string.
-	vim.api.nvim_buf_set_text(0, row, col, row, col, { text })
-	print("h")
-end
-
-vim.keymap.set("n", "<leader>ol", function()
-	-- print(vim.fn.system("fd"))
-	MiniPick.start({
-		source = {
-			items = function()
-				return vim.fn.split(vim.fn.system("fd"), "\n")
-			end,
-			choose = function(item)
-				--  cannot use nvim_paste / nvim_put etc to insert text at cursor
-				--  maybe because the cursor is still in pick ui?
-				vim.fn.setreg("+", "[[" .. item:gsub("%.[^%.]+$", "") .. "]]")
-			end,
-		},
-	})
-end)
-
--- Copy text between nearest delimiters (e.g., [[ ]], "", (), {}, etc.)
-function get_inner_delimeter(open_delim, close_delim)
-	local line = vim.api.nvim_get_current_line()
-	local cursor_col = vim.api.nvim_win_get_cursor(0)[2] + 1 -- 1-based index
-	local pattern = vim.pesc(open_delim) .. "(.-)" .. vim.pesc(close_delim)
-
-	local first_match = nil
-	local search_start = 1
-
-	while true do
-		local s, e, match = line:find(pattern, search_start)
-		if not s then
-			break
-		end
-
-		local open_end = s + #open_delim - 1
-		local close_start = e - #close_delim + 1
-
-		if cursor_col >= open_end + 1 and cursor_col <= close_start - 1 then
-			-- Cursor is inside this pair → return immediately
-			return match
-		end
-
-		if not first_match then
-			first_match = match
-		end
-
-		search_start = e + 1
-	end
-
-	return first_match -- may be nil if nothingfound
-end
-
-vim.keymap.set("n", "<leader>of", function()
-	local name = get_inner_delimeter("[[", "]]")
-	if name then
-		name = vim.fn.split(name, "|")[1] -- extract filename
-		name = name .. ".md"
-		name = "'" .. name .. "'" -- prevent special char in sh
-		local path_str = vim.fn.system("fd " .. name)
-		if not path_str or #path_str == 0 then
-			print(name .. " not found")
-			return
-		end
-		local pathes = vim.fn.split(path_str, "\n")
-		if not pathes or #pathes == 0 then
-			print(name .. " not found")
-		end
-		local path = pathes[1]
-		vim.cmd("e " .. path)
-	end
 end)
 
 -- Strudel
@@ -850,3 +771,6 @@ vim.keymap.set("n", "<leader>vV", ":Pick visit_paths cwd=nil filter='core'<CR>")
 
 -- UI
 vim.keymap.set("n", "<leader>uw", ":set wrap!<CR>")
+
+-- Util
+vim.keymap.set("n", "<leader>sh", ":Pick help<CR>")
