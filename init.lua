@@ -2,6 +2,12 @@
 -- ## OPTIONS
 -- ===================================================================
 
+local ob_home = "/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes"
+
+local function is_in_ob_dir(path)
+	return path:find(ob_home, 1, true) ~= 1
+end
+
 -- Theme & transparency
 vim.api.nvim_set_hl(0, "Normal", { bg = "none" })
 vim.api.nvim_set_hl(0, "NormalNC", { bg = "none" })
@@ -42,7 +48,7 @@ vim.opt.pumheight = 10 -- popup menu height
 vim.opt.pumblend = 10 -- popup menu transparency
 vim.opt.winblend = 10 -- floating window transparency
 vim.opt.winborder = "rounded"
-vim.opt.conceallevel = 2 -- don't hide markup
+vim.opt.conceallevel = 1 -- don't hide markup
 vim.opt.concealcursor = "" -- don't hide cursor line markup
 vim.opt.lazyredraw = true -- don't redraw during macros
 vim.opt.synmaxcol = 300 -- syntax highlighting limit
@@ -306,13 +312,26 @@ require("lazy").setup({
 		{ "nvim-mini/mini.visits", version = "*", opts = {} }, -- for recent files
 		{ "nvim-mini/mini.extra", version = "*", opts = {} }, -- for extra pickers
 		{
-			"stevearc/oil.nvim",
-			opts = {
-				default_file_explorer = true,
-				columns = { "permissions", "size", "mtime" },
-				delete_to_trash = true,
-			},
-			lazy = false,
+			"X3eRo0/dired.nvim",
+			dependencies = { "MunifTanjim/nui.nvim" },
+			config = function()
+				require("dired").setup({
+					path_separator = "/",
+					show_banner = false,
+					show_icons = false,
+					show_hidden = true,
+					show_dot_dirs = true,
+					show_colors = true,
+					keybinds = {
+						dired_enter = "<CR>",
+						dired_back = "-",
+						dired_up = "_",
+						dired_rename = "R",
+						-- ... (add more keybindings as needed)
+						dired_quit = "q",
+					},
+				})
+			end,
 		},
 		{
 			"NeogitOrg/neogit",
@@ -357,36 +376,11 @@ require("lazy").setup({
 			opts = {
 				image = {
 					resolve = function(path, src)
-						if require("obsidian.api").path_is_note(path) then
-							return require("obsidian.api").resolve_image_path(src)
+						local dirname = vim.fs.dirname(vim.api.nvim_buf_get_name(0))
+						if is_in_ob_dir(dirname) then
+							return dirname .. "/" .. "attachments" .. "/" .. src
 						end
 					end,
-				},
-			},
-		},
-		{
-			"obsidian-nvim/obsidian.nvim",
-			version = "*", -- recommended, use latest release instead of latest commit
-			ft = "markdown",
-			lazy = false,
-			opts = {
-				legacy_commands = false,
-				workspaces = {
-					{
-						name = "personal",
-						path = "/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes",
-					},
-				},
-				-- see below for full list of options 👇
-				attachments = {
-					img_folder = "./attachments",
-				},
-				daily_notes = {
-					folder = "4_archived/daily",
-					date_format = nil,
-					alias_format = nil,
-					default_tags = { "daily-notes" },
-					workdays_only = true,
 				},
 			},
 		},
@@ -417,6 +411,42 @@ require("lazy").setup({
 				require("strudel").setup()
 			end,
 			lazy = false,
+		},
+		{
+			"OXY2DEV/markview.nvim",
+			lazy = false,
+			dependencies = {
+				"saghen/blink.cmp",
+			},
+		},
+		{
+			"nvim-treesitter/nvim-treesitter",
+			build = ":TSUpdate", -- Automatically update parsers on plugin update
+			config = function()
+				require("nvim-treesitter.configs").setup({
+					highlight = { enable = true }, -- Enable syntax highlighting
+					indent = { enable = true }, -- Enable indentation
+					ensure_installed = {
+						"c",
+						"lua",
+						"vim",
+						"vimdoc",
+						"query",
+						"markdown",
+						"markdown_inline",
+						"html",
+						"latex",
+						"typst",
+						"yaml",
+						"go",
+						"rust",
+						"java",
+						"clojure",
+						"haskell",
+					}, -- Specify parsers to install
+					auto_install = true, -- Automatically install missing parsers
+				})
+			end,
 		},
 		--Color Schemes
 		{ "olimorris/onedarkpro.nvim" },
@@ -485,11 +515,18 @@ local function find_root(patterns)
 	return root and vim.fn.fnamemodify(root, ":h") or path
 end
 
--- Go LSP setup
+-- LSP ENABLEs
 vim.lsp.enable("gopls")
-
--- rust LSP setup
 vim.lsp.enable("rust_analyzer")
+vim.lsp.enable("marksman")
+vim.lsp.enable("jdtls")
+vim.lsp.enable("json-lsp")
+vim.lsp.enable("lua-language-server")
+-- vim.lsp.enable("markdown-toc")
+-- vim.lsp.enable("markdownlint-cli2")
+vim.lsp.enable("marksman")
+vim.lsp.enable("shfmt")
+vim.lsp.enable("stylua")
 
 -- LSP keymaps
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -599,7 +636,7 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
 vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
 
 -- Quick file navigation
-vim.keymap.set("n", "<leader>fe", ":Oil<CR>", { desc = "Open file explorer" })
+vim.keymap.set("n", "<leader>fe", ":Dired<CR>", { desc = "Open file explorer" })
 vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
 vim.keymap.set("n", "<leader>fs", ":w<CR>")
@@ -679,25 +716,116 @@ if not vim.fn.empty(vim.fn.maparg("n", "grr")) then -- prevent :source error
 	vim.keymap.del("n", "gra")
 end
 vim.keymap.set("n", "gr", ":Pick lsp scope='references'<CR>")
+vim.keymap.set("n", "gd", ":lua vim.lsp.buf.definition()<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>sd", ":Pick diagnostic<CR>", opts)
 vim.keymap.set("n", "<leader>sm", ":Pick keymaps<CR>", opts)
 vim.keymap.set("n", "<leader>p", ":Pick resume<CR>", opts)
 
 -- Jump
 vim.keymap.set("n", "<leader>jc", ":e ~/.config/nvim/init.lua<CR>")
-vim.keymap.set("n", "<leader>jo", ":Obsidian quick_switch<CR>")
 -- vim.keymap.set("n", "<leader>js", ":e ~/Code/Resources/strudel/main.str")
 vim.keymap.set("n", "<leader>js", function()
 	MiniPick.builtin.files(nil, { source = { cwd = "~/Code/Resources/strudel/" } })
 end)
 
 -- Obsidian
-vim.keymap.set("n", "<leader>oo", ":Obsidian quick_switch<CR>")
-vim.keymap.set("n", "<leader>op", ":Obsidian paste_img<CR>")
-vim.keymap.set("n", "<leader>ob", ":Obsidian backlinks<CR>")
-vim.keymap.set("n", "<leader>og", ":Obsidian follow_link<CR>")
-vim.keymap.set("n", "<leader>on", ":Obsidian new<CR>")
-vim.keymap.set("n", "<leader>od", ":Obsidian dailies<CR>")
+vim.keymap.set("n", "<leader>oo", function()
+	MiniPick.builtin.files(nil, { source = { cwd = ob_home } })
+end)
+
+vim.keymap.set("n", "<leader>on", function()
+	local cwd = vim.fn.getcwd()
+	if cwd:find(ob_home, 1, true) ~= 1 then
+		print(cwd .. "outside of obsidian home")
+		return
+	end
+	vim.ui.input({ prompt = "name: " }, function(input)
+		if not input then
+			print("no name provided")
+			return
+		end
+		vim.cmd("new " .. input)
+	end)
+end)
+
+local function insert_my_text(text)
+	-- Get current cursor position (row and col are 0-indexed for API calls)
+	local row, col = unpack(vim.api.nvim_win_get_cursor(0))
+	-- Insert the text at the current cursor position
+	-- We set start_row, start_col, end_row, end_col to the same position
+	-- and provide the text as a table with one string.
+	vim.api.nvim_buf_set_text(0, row, col, row, col, { text })
+	print("h")
+end
+
+vim.keymap.set("n", "<leader>ol", function()
+	-- print(vim.fn.system("fd"))
+	MiniPick.start({
+		source = {
+			items = function()
+				return vim.fn.split(vim.fn.system("fd"), "\n")
+			end,
+			choose = function(item)
+				--  cannot use nvim_paste / nvim_put etc to insert text at cursor
+				--  maybe because the cursor is still in pick ui?
+				vim.fn.setreg("+", "[[" .. item:gsub("%.[^%.]+$", "") .. "]]")
+			end,
+		},
+	})
+end)
+
+-- Copy text between nearest delimiters (e.g., [[ ]], "", (), {}, etc.)
+function get_inner_delimeter(open_delim, close_delim)
+	local line = vim.api.nvim_get_current_line()
+	local cursor_col = vim.api.nvim_win_get_cursor(0)[2] + 1 -- 1-based index
+	local pattern = vim.pesc(open_delim) .. "(.-)" .. vim.pesc(close_delim)
+
+	local first_match = nil
+	local search_start = 1
+
+	while true do
+		local s, e, match = line:find(pattern, search_start)
+		if not s then
+			break
+		end
+
+		local open_end = s + #open_delim - 1
+		local close_start = e - #close_delim + 1
+
+		if cursor_col >= open_end + 1 and cursor_col <= close_start - 1 then
+			-- Cursor is inside this pair → return immediately
+			return match
+		end
+
+		if not first_match then
+			first_match = match
+		end
+
+		search_start = e + 1
+	end
+
+	return first_match -- may be nil if nothingfound
+end
+
+vim.keymap.set("n", "<leader>of", function()
+	local name = get_inner_delimeter("[[", "]]")
+	if name then
+		name = vim.fn.split(name, "|")[1] -- extract filename
+		name = name .. ".md"
+		name = "'" .. name .. "'" -- prevent special char in sh
+		local path_str = vim.fn.system("fd " .. name)
+		if not path_str or #path_str == 0 then
+			print(name .. " not found")
+			return
+		end
+		local pathes = vim.fn.split(path_str, "\n")
+		if not pathes or #pathes == 0 then
+			print(name .. " not found")
+		end
+		local path = pathes[1]
+		vim.cmd("e " .. path)
+	end
+end)
 
 -- Strudel
 local strudel = require("strudel")
