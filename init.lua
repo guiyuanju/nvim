@@ -319,25 +319,25 @@ require("lazy").setup({
 		{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
 		{ "nvim-mini/mini.bufremove", version = "*", opts = {} }, -- better buffer kill behavior
 		{ "nvim-mini/mini.diff", version = "*", opts = { view = { style = "sign" } } }, -- git diff
-		{
-			"nvim-mini/mini.pick",
-			version = "*",
-			opts = {
-				window = {
-					config = function()
-						local height = math.floor(0.618 * vim.o.lines)
-						local width = math.floor(0.8 * vim.o.columns)
-						return {
-							anchor = "NW",
-							height = height,
-							width = width,
-							row = math.floor(0.5 * (vim.o.lines - height)),
-							col = math.floor(0.5 * (vim.o.columns - width)),
-						}
-					end,
-				},
-			},
-		}, -- picker
+		-- {
+		-- 	"nvim-mini/mini.pick",
+		-- 	version = "*",
+		-- 	opts = {
+		-- 		window = {
+		-- 			config = function()
+		-- 				local height = math.floor(0.618 * vim.o.lines)
+		-- 				local width = math.floor(0.8 * vim.o.columns)
+		-- 				return {
+		-- 					anchor = "NW",
+		-- 					height = height,
+		-- 					width = width,
+		-- 					row = math.floor(0.5 * (vim.o.lines - height)),
+		-- 					col = math.floor(0.5 * (vim.o.columns - width)),
+		-- 				}
+		-- 			end,
+		-- 		},
+		-- 	},
+		-- }, -- picker
 		-- { "nvim-mini/mini.files", version = "*", opts = {} }, -- file picker
 		{ "nvim-mini/mini.visits", version = "*", opts = {} }, -- for recent files
 		{ "nvim-mini/mini.extra", version = "*", opts = {} }, -- for extra pickers
@@ -447,6 +447,11 @@ require("lazy").setup({
 			"folke/snacks.nvim",
 			---@type snacks.Config
 			opts = {
+				picker = {
+					-- your picker configuration comes here
+					-- or leave it empty to use the default settings
+					-- refer to the configuration section below
+				},
 				image = {
 					resolve = function(path, src)
 						local dirname = vim.fs.dirname(vim.api.nvim_buf_get_name(0))
@@ -688,7 +693,7 @@ vim.keymap.set("n", "<C-d>", "<C-d>zz", { desc = "Half page down (centered)" })
 vim.keymap.set("n", "<C-u>", "<C-u>zz", { desc = "Half page up (centered)" })
 
 -- Buffer navigation
-vim.keymap.set("n", "<leader>bb", ":Pick buffers<CR>", { desc = "Next buffer" })
+vim.keymap.set("n", "<leader>bb", Snacks.picker.buffers, { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { desc = "Delete buffer" })
@@ -727,12 +732,12 @@ vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position"
 
 -- Quick file navigation
 -- vim.keymap.set("n", "<leader>fe", ":Dired<CR>", { desc = "Open file explorer" })
-vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
+vim.keymap.set("n", "<leader>ff", Snacks.picker.smart, { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
 vim.keymap.set("n", "<leader>fs", ":w<CR>")
 
 -- Adjust LHS and description to your liking
-vim.keymap.set("n", "<leader>fr", ":Pick visit_paths cwd='' recency_weight=1<CR>")
+vim.keymap.set("n", "<leader>fr", Snacks.picker.recent)
 -- vim.keymap.set('n', '<leader>fr', ":Pick visit_paths cwd='' recency_weight=1 filter='core'")
 
 -- Terminal
@@ -793,12 +798,10 @@ vim.keymap.set("n", "<leader>g", ":Neogit<CR>")
 
 -- Search
 -- List (Search)
-vim.keymap.set("n", "<leader>sb", function()
-	MiniExtra.pickers.buf_lines({ scope = "current", preserve_order = false })
-end)
-vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
+vim.keymap.set("n", "<leader>sb", Snacks.picker.lines)
+vim.keymap.set("n", "<leader>sg", Snacks.picker.grep, { desc = "Grep" })
 -- vim.keymap.set("n", "<leader>ss", function() MiniExtra.pickers.lsp({ scope = 'document_symbol' }) end, { desc = "Grep" })
-vim.keymap.set("n", "<leader>ss", ":Pick lsp scope='document_symbol'<CR>")
+vim.keymap.set("n", "<leader>ss", Snacks.picker.lsp_symbols)
 -- delete default keybindings
 -- function reloadable_unset_key(mode, keybinding) -- prevent :source error
 -- 	-- if not vim.fn.empty(vim.fn.maparg(mode, keybinding)) then -- prevent :source error
@@ -812,20 +815,20 @@ vim.keymap.set("n", "<leader>ss", ":Pick lsp scope='document_symbol'<CR>")
 -- reloadable_unset_key("n", "gra")
 -- vim.keymap.set("n", "gr", ":Pick lsp scope='references'<CR>")
 vim.keymap.set("n", "gd", ":lua vim.lsp.buf.definition()<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>sd", ":Pick diagnostic<CR>", opts)
-vim.keymap.set("n", "<leader>sm", ":Pick keymaps<CR>", opts)
-vim.keymap.set("n", "<leader>p", ":Pick resume<CR>", opts)
+vim.keymap.set("n", "<leader>sd", Snacks.picker.diagnostics, opts)
+vim.keymap.set("n", "<leader>sm", Snacks.picker.keymaps, opts)
+vim.keymap.set("n", "<leader>sR", Snacks.picker.resume, opts)
 
 -- Jump
 vim.keymap.set("n", "<leader>jc", ":e ~/.config/nvim/init.lua<CR>")
 -- vim.keymap.set("n", "<leader>js", ":e ~/Code/Resources/strudel/main.str")
 vim.keymap.set("n", "<leader>js", function()
-	MiniPick.builtin.files(nil, { source = { cwd = "~/Code/Resources/strudel/" } })
+	Snacks.picker.files({ cwd = "~/Code/Resources/strudel/" })
 end)
 
 -- Obsidian
 vim.keymap.set("n", "<leader>oo", function()
-	MiniPick.builtin.files(nil, { source = { cwd = ob_home } })
+	Snacks.picker.files({ cwd = ob_home })
 end)
 
 vim.keymap.set("n", "<leader>op", function()
@@ -869,29 +872,26 @@ vim.keymap.set("n", "<leader>mb", strudel.set_buffer, { desc = "Strudel set curr
 vim.keymap.set("n", "<leader>mx", strudel.execute, { desc = "Strudel set current buffer and update" })
 
 -- Visit labels
-local map_vis = function(keys, call, desc)
-	local rhs = "<Cmd>lua MiniVisits." .. call .. "<CR>"
-	vim.keymap.set("n", "<Leader>" .. keys, rhs, { desc = desc })
-end
-
-map_vis("va", "add_label('core')", "Add label")
-map_vis("vd", "remove_label('core')", "Remove label")
-vim.keymap.set("n", "<leader>vv", ":Pick visit_paths cwd='' filter='core'<CR>") -- all core
-vim.keymap.set("n", "<leader>vV", ":Pick visit_paths cwd=nil filter='core'<CR>") -- cwd core
+-- local map_vis = function(keys, call, desc)
+-- 	local rhs = "<Cmd>lua MiniVisits." .. call .. "<CR>"
+-- 	vim.keymap.set("n", "<Leader>" .. keys, rhs, { desc = desc })
+-- end
+--
+-- map_vis("va", "add_label('core')", "Add label")
+-- map_vis("vd", "remove_label('core')", "Remove label")
+-- vim.keymap.set("n", "<leader>vv", ":Pick visit_paths cwd='' filter='core'<CR>") -- all core
+-- vim.keymap.set("n", "<leader>vV", ":Pick visit_paths cwd=nil filter='core'<CR>") -- cwd core
 
 -- UI
 vim.keymap.set("n", "<leader>uw", ":set wrap!<CR>")
 
--- Util
-vim.keymap.set("n", "<leader>sh", ":Pick help<CR>")
-
 -- Open
-local function open_playground()
-	local go_pg = "/Users/june/Code/Areas/Playgrounds/go"
-	local cwd = vim.fn.getcwd()
-	vim.cmd("cd " .. go_pg)
-	vim.cmd("Dired")
-	vim.cmd("cd " .. cwd)
-end
-
-vim.keymap.set("n", "<leader>op", open_playground)
+-- local function open_playground()
+-- 	local go_pg = "/Users/june/Code/Areas/Playgrounds/go"
+-- 	local cwd = vim.fn.getcwd()
+-- 	vim.cmd("cd " .. go_pg)
+-- 	vim.cmd("Dired")
+-- 	vim.cmd("cd " .. cwd)
+-- end
+--
+-- vim.keymap.set("n", "<leader>op", open_playground)
