@@ -5,7 +5,7 @@
 local ob_home = "/Users/june/Library/Mobile Documents/iCloud~md~obsidian/Documents/notes"
 
 local function is_in_ob_dir(path)
-	return path:find(ob_home, 1, true) ~= 1
+	return path:sub(1, #ob_home) == ob_home
 end
 
 -- Theme & transparency
@@ -26,8 +26,8 @@ vim.opt.tabstop = 2 -- tab width
 vim.opt.shiftwidth = 2 -- intent width
 vim.opt.softtabstop = 2 -- soft tab stop
 vim.opt.expandtab = true -- use spaces instead of tabs
-vim.opt.smartindent = true -- smart auto-indenting
 vim.opt.autoindent = true -- copy indent from current line
+vim.opt.smartindent = true -- smart auto-indenting
 
 -- Search settings
 vim.opt.ignorecase = true -- case insensitive search
@@ -48,7 +48,7 @@ vim.opt.pumheight = 10 -- popup menu height
 vim.opt.pumblend = 10 -- popup menu transparency
 vim.opt.winblend = 10 -- floating window transparency
 vim.opt.winborder = "rounded"
-vim.opt.conceallevel = 1 -- don't hide markup
+vim.opt.conceallevel = 2 -- don't hide markup
 vim.opt.concealcursor = "" -- don't hide cursor line markup
 vim.opt.lazyredraw = true -- don't redraw during macros
 vim.opt.synmaxcol = 300 -- syntax highlighting limit
@@ -104,6 +104,16 @@ vim.opt.maxmempattern = 20000
 
 -- Basic autocommands
 local augroup = vim.api.nvim_create_augroup("UserConfig", {})
+
+-- enable soft wrap in md
+vim.api.nvim_create_autocmd({ "FileType" }, {
+	group = augroup,
+	pattern = { "markdown" },
+	callback = function()
+		vim.opt_local.wrap = true
+		vim.opt_local.linebreak = true
+	end,
+})
 
 -- Highlight yanked text
 vim.api.nvim_create_autocmd("TextYankPost", {
@@ -304,35 +314,98 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
 	spec = {
 		-- QOL
-		{ "nvim-mini/mini.pairs", version = "*", opts = {} }, -- auto pairs
+		-- { "nvim-mini/mini.pairs", version = "*", opts = {} }, -- auto pairs
+		{ "nvim-mini/mini.surround", version = "*", opts = {} }, -- auto pairs
+		{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
 		{ "nvim-mini/mini.bufremove", version = "*", opts = {} }, -- better buffer kill behavior
 		{ "nvim-mini/mini.diff", version = "*", opts = { view = { style = "sign" } } }, -- git diff
-		{ "nvim-mini/mini.pick", version = "*", opts = {} }, -- picker
-		{ "nvim-mini/mini.files", version = "*", opts = {} }, -- file picker
+		{
+			"nvim-mini/mini.pick",
+			version = "*",
+			opts = {
+				window = {
+					config = function()
+						local height = math.floor(0.618 * vim.o.lines)
+						local width = math.floor(0.8 * vim.o.columns)
+						return {
+							anchor = "NW",
+							height = height,
+							width = width,
+							row = math.floor(0.5 * (vim.o.lines - height)),
+							col = math.floor(0.5 * (vim.o.columns - width)),
+						}
+					end,
+				},
+			},
+		}, -- picker
+		-- { "nvim-mini/mini.files", version = "*", opts = {} }, -- file picker
 		{ "nvim-mini/mini.visits", version = "*", opts = {} }, -- for recent files
 		{ "nvim-mini/mini.extra", version = "*", opts = {} }, -- for extra pickers
 		{
-			"X3eRo0/dired.nvim",
-			dependencies = { "MunifTanjim/nui.nvim" },
-			config = function()
-				require("dired").setup({
-					path_separator = "/",
-					show_banner = false,
-					show_icons = false,
-					show_hidden = true,
-					show_dot_dirs = true,
-					show_colors = true,
-					keybinds = {
-						dired_enter = "<CR>",
-						dired_back = "-",
-						dired_up = "_",
-						dired_rename = "R",
-						-- ... (add more keybindings as needed)
-						dired_quit = "q",
-					},
-				})
+			"mikavilpas/yazi.nvim",
+			version = "*", -- use the latest stable version
+			event = "VeryLazy",
+			dependencies = {
+				{ "nvim-lua/plenary.nvim", lazy = true },
+			},
+			keys = {
+				-- 👇 in this section, choose your own keymappings!
+				{
+					"<leader>fE",
+					mode = { "n", "v" },
+					"<cmd>Yazi<cr>",
+					desc = "Open yazi at the current file",
+				},
+				{
+					-- Open in the current working directory
+					"<leader>fe",
+					"<cmd>Yazi cwd<cr>",
+					desc = "Open the file manager in nvim's working directory",
+				},
+				{
+					"<leader>-",
+					"<cmd>Yazi toggle<cr>",
+					desc = "Resume the last yazi session",
+				},
+			},
+			---@type YaziConfig | {}
+			opts = {
+				-- if you want to open yazi instead of netrw, see below for more info
+				open_for_directories = false,
+				keymaps = {
+					show_help = "<f1>",
+				},
+			},
+			-- 👇 if you use `open_for_directories=true`, this is recommended
+			init = function()
+				-- mark netrw as loaded so it's not loaded at all.
+				--
+				-- More details: https://github.com/mikavilpas/yazi.nvim/issues/802
+				vim.g.loaded_netrwPlugin = 1
 			end,
 		},
+		-- {
+		-- 	"X3eRo0/dired.nvim",
+		-- 	dependencies = { "MunifTanjim/nui.nvim" },
+		-- 	config = function()
+		-- 		require("dired").setup({
+		-- 			path_separator = "/",
+		-- 			show_banner = false,
+		-- 			show_icons = false,
+		-- 			show_hidden = true,
+		-- 			show_dot_dirs = true,
+		-- 			show_colors = true,
+		-- 			keybinds = {
+		-- 				dired_enter = "<CR>",
+		-- 				dired_back = "-",
+		-- 				dired_up = "_",
+		-- 				dired_rename = "R",
+		-- 				-- ... (add more keybindings as needed)
+		-- 				dired_quit = "q",
+		-- 			},
+		-- 		})
+		-- 	end,
+		-- },
 		{
 			"NeogitOrg/neogit",
 			dependencies = {
@@ -412,13 +485,13 @@ require("lazy").setup({
 			end,
 			lazy = false,
 		},
-		{
-			"OXY2DEV/markview.nvim",
-			lazy = false,
-			dependencies = {
-				"saghen/blink.cmp",
-			},
-		},
+		-- {
+		-- 	"OXY2DEV/markview.nvim",
+		-- 	lazy = false,
+		-- 	dependencies = {
+		-- 		"saghen/blink.cmp",
+		-- 	},
+		-- },
 		{
 			"nvim-treesitter/nvim-treesitter",
 			build = ":TSUpdate", -- Automatically update parsers on plugin update
@@ -448,6 +521,23 @@ require("lazy").setup({
 				})
 			end,
 		},
+		{
+			"HakonHarnes/img-clip.nvim",
+			event = "VeryLazy",
+			opts = {
+				-- add options here
+				-- or leave it empty to use the default settings
+			},
+		},
+		-- {
+		-- 	"MeanderingProgrammer/render-markdown.nvim",
+		-- 	dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
+		-- 	-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },        -- if you use standalone mini plugins
+		-- 	-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+		-- 	---@module 'render-markdown'
+		-- 	---@type render.md.UserConfig
+		-- 	opts = {},
+		-- },
 		--Color Schemes
 		{ "olimorris/onedarkpro.nvim" },
 		{ "catppuccin/nvim" },
@@ -535,7 +625,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 		-- Information
 		vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-		vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, opts)
+		vim.keymap.set("n", "<C-S-k>", vim.lsp.buf.signature_help, opts)
 
 		-- Code actions
 		vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
@@ -636,13 +726,13 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
 vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
 
 -- Quick file navigation
-vim.keymap.set("n", "<leader>fe", ":Dired<CR>", { desc = "Open file explorer" })
+-- vim.keymap.set("n", "<leader>fe", ":Dired<CR>", { desc = "Open file explorer" })
 vim.keymap.set("n", "<leader>ff", ":Pick files<CR>", { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
 vim.keymap.set("n", "<leader>fs", ":w<CR>")
 
 -- Adjust LHS and description to your liking
-vim.keymap.set("n", "<leader>fr", ":Pick visit_paths cwd='' recency_weight=0.5<CR>")
+vim.keymap.set("n", "<leader>fr", ":Pick visit_paths cwd='' recency_weight=1<CR>")
 -- vim.keymap.set('n', '<leader>fr', ":Pick visit_paths cwd='' recency_weight=1 filter='core'")
 
 -- Terminal
@@ -679,7 +769,9 @@ end
 vim.keymap.set("n", "<leader>t", toggle_terminal)
 vim.keymap.set({ "n", "t", "i", "v" }, "<C-/>", toggle_terminal)
 vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
+vim.keymap.set("t", "<C-[>", "<C-\\><C-n>", { desc = "Esc to normal mode in terminal" })
 vim.keymap.set("t", "<C-d>", "<C-\\><C-n> | :bd!<CR>", { desc = "Close terminal" })
+vim.keymap.set("t", "<C-k>", "<C-\\><C-n><C-w>k")
 
 -- Copy full file-path
 vim.keymap.set("n", "<leader>fp", function()
@@ -708,14 +800,17 @@ vim.keymap.set("n", "<leader>sg", ":Pick grep<CR>", { desc = "Grep" })
 -- vim.keymap.set("n", "<leader>ss", function() MiniExtra.pickers.lsp({ scope = 'document_symbol' }) end, { desc = "Grep" })
 vim.keymap.set("n", "<leader>ss", ":Pick lsp scope='document_symbol'<CR>")
 -- delete default keybindings
-if not vim.fn.empty(vim.fn.maparg("n", "grr")) then -- prevent :source error
-	vim.keymap.del("n", "grr")
-	vim.keymap.del("n", "gri")
-	vim.keymap.del("n", "grt")
-	vim.keymap.del("n", "grn")
-	vim.keymap.del("n", "gra")
-end
-vim.keymap.set("n", "gr", ":Pick lsp scope='references'<CR>")
+-- function reloadable_unset_key(mode, keybinding) -- prevent :source error
+-- 	-- if not vim.fn.empty(vim.fn.maparg(mode, keybinding)) then -- prevent :source error
+-- 	vim.keymap.del(mode, keybinding)
+-- 	-- end
+-- end
+-- reloadable_unset_key("n", "grr")
+-- reloadable_unset_key("n", "gri")
+-- reloadable_unset_key("n", "grt")
+-- reloadable_unset_key("n", "grn")
+-- reloadable_unset_key("n", "gra")
+-- vim.keymap.set("n", "gr", ":Pick lsp scope='references'<CR>")
 vim.keymap.set("n", "gd", ":lua vim.lsp.buf.definition()<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>sd", ":Pick diagnostic<CR>", opts)
 vim.keymap.set("n", "<leader>sm", ":Pick keymaps<CR>", opts)
@@ -731,6 +826,21 @@ end)
 -- Obsidian
 vim.keymap.set("n", "<leader>oo", function()
 	MiniPick.builtin.files(nil, { source = { cwd = ob_home } })
+end)
+
+vim.keymap.set("n", "<leader>op", function()
+	if not is_in_ob_dir(vim.fn.getcwd()) then
+		print("not in ob home")
+		return
+	end
+	require("img-clip").paste_image({
+		use_absolute_path = false,
+		relative_to_current_file = true,
+		extension = "webp",
+		dir_path = "attachments",
+		prompt_for_file_name = false,
+		template = "![[$FILE_NAME]]$CURSOR",
+	})
 end)
 
 vim.keymap.set("n", "<leader>on", function()
@@ -774,3 +884,14 @@ vim.keymap.set("n", "<leader>uw", ":set wrap!<CR>")
 
 -- Util
 vim.keymap.set("n", "<leader>sh", ":Pick help<CR>")
+
+-- Open
+local function open_playground()
+	local go_pg = "/Users/june/Code/Areas/Playgrounds/go"
+	local cwd = vim.fn.getcwd()
+	vim.cmd("cd " .. go_pg)
+	vim.cmd("Dired")
+	vim.cmd("cd " .. cwd)
+end
+
+vim.keymap.set("n", "<leader>op", open_playground)
