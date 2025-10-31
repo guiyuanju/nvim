@@ -314,98 +314,12 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
 	spec = {
 		-- QOL
-		-- { "nvim-mini/mini.pairs", version = "*", opts = {} }, -- auto pairs
 		{ "nvim-mini/mini.surround", version = "*", opts = {} }, -- auto pairs
 		{ "windwp/nvim-autopairs", event = "InsertEnter", config = true },
 		{ "nvim-mini/mini.bufremove", version = "*", opts = {} }, -- better buffer kill behavior
 		{ "nvim-mini/mini.diff", version = "*", opts = { view = { style = "sign" } } }, -- git diff
-		-- {
-		-- 	"nvim-mini/mini.pick",
-		-- 	version = "*",
-		-- 	opts = {
-		-- 		window = {
-		-- 			config = function()
-		-- 				local height = math.floor(0.618 * vim.o.lines)
-		-- 				local width = math.floor(0.8 * vim.o.columns)
-		-- 				return {
-		-- 					anchor = "NW",
-		-- 					height = height,
-		-- 					width = width,
-		-- 					row = math.floor(0.5 * (vim.o.lines - height)),
-		-- 					col = math.floor(0.5 * (vim.o.columns - width)),
-		-- 				}
-		-- 			end,
-		-- 		},
-		-- 	},
-		-- }, -- picker
-		-- { "nvim-mini/mini.files", version = "*", opts = {} }, -- file picker
 		{ "nvim-mini/mini.visits", version = "*", opts = {} }, -- for recent files
 		{ "nvim-mini/mini.extra", version = "*", opts = {} }, -- for extra pickers
-		{
-			"mikavilpas/yazi.nvim",
-			version = "*", -- use the latest stable version
-			event = "VeryLazy",
-			dependencies = {
-				{ "nvim-lua/plenary.nvim", lazy = true },
-			},
-			keys = {
-				-- 👇 in this section, choose your own keymappings!
-				{
-					"<leader>fE",
-					mode = { "n", "v" },
-					"<cmd>Yazi<cr>",
-					desc = "Open yazi at the current file",
-				},
-				{
-					-- Open in the current working directory
-					"<leader>fe",
-					"<cmd>Yazi cwd<cr>",
-					desc = "Open the file manager in nvim's working directory",
-				},
-				{
-					"<leader>-",
-					"<cmd>Yazi toggle<cr>",
-					desc = "Resume the last yazi session",
-				},
-			},
-			---@type YaziConfig | {}
-			opts = {
-				-- if you want to open yazi instead of netrw, see below for more info
-				open_for_directories = false,
-				keymaps = {
-					show_help = "<f1>",
-				},
-			},
-			-- 👇 if you use `open_for_directories=true`, this is recommended
-			init = function()
-				-- mark netrw as loaded so it's not loaded at all.
-				--
-				-- More details: https://github.com/mikavilpas/yazi.nvim/issues/802
-				vim.g.loaded_netrwPlugin = 1
-			end,
-		},
-		-- {
-		-- 	"X3eRo0/dired.nvim",
-		-- 	dependencies = { "MunifTanjim/nui.nvim" },
-		-- 	config = function()
-		-- 		require("dired").setup({
-		-- 			path_separator = "/",
-		-- 			show_banner = false,
-		-- 			show_icons = false,
-		-- 			show_hidden = true,
-		-- 			show_dot_dirs = true,
-		-- 			show_colors = true,
-		-- 			keybinds = {
-		-- 				dired_enter = "<CR>",
-		-- 				dired_back = "-",
-		-- 				dired_up = "_",
-		-- 				dired_rename = "R",
-		-- 				-- ... (add more keybindings as needed)
-		-- 				dired_quit = "q",
-		-- 			},
-		-- 		})
-		-- 	end,
-		-- },
 		{
 			"NeogitOrg/neogit",
 			dependencies = {
@@ -425,7 +339,7 @@ require("lazy").setup({
 			opts = {
 				keymap = {
 					preset = "enter",
-					["K"] = { "show_documentation" },
+					["C-k"] = { "show_documentation" },
 				},
 				appearance = {
 					nerd_font_variant = "mono",
@@ -438,19 +352,14 @@ require("lazy").setup({
 			},
 			opts_extend = { "sources.default" },
 		},
-		-- {
-		--   "folke/trouble.nvim",
-		--   opts = {}, -- for default options, refer to the configuration section for custom setup.
-		--   cmd = "Trouble",
-		-- },
 		{
 			"folke/snacks.nvim",
 			---@type snacks.Config
 			opts = {
 				picker = {
-					-- your picker configuration comes here
-					-- or leave it empty to use the default settings
-					-- refer to the configuration section below
+					matcher = {
+						frecency = true,
+					},
 				},
 				image = {
 					resolve = function(path, src)
@@ -490,13 +399,6 @@ require("lazy").setup({
 			end,
 			lazy = false,
 		},
-		-- {
-		-- 	"OXY2DEV/markview.nvim",
-		-- 	lazy = false,
-		-- 	dependencies = {
-		-- 		"saghen/blink.cmp",
-		-- 	},
-		-- },
 		{
 			"nvim-treesitter/nvim-treesitter",
 			build = ":TSUpdate", -- Automatically update parsers on plugin update
@@ -529,30 +431,16 @@ require("lazy").setup({
 		{
 			"HakonHarnes/img-clip.nvim",
 			event = "VeryLazy",
-			opts = {
-				-- add options here
-				-- or leave it empty to use the default settings
-			},
+			opts = {},
 		},
-		-- {
-		-- 	"MeanderingProgrammer/render-markdown.nvim",
-		-- 	dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
-		-- 	-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },        -- if you use standalone mini plugins
-		-- 	-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
-		-- 	---@module 'render-markdown'
-		-- 	---@type render.md.UserConfig
-		-- 	opts = {},
-		-- },
 		--Color Schemes
 		{ "olimorris/onedarkpro.nvim" },
 		{ "catppuccin/nvim" },
 		{ "nyoom-engineering/oxocarbon.nvim" },
 	},
-	-- Configure any other settings here. See the documentation for more details.
-	-- colorscheme that will be used when installing plugins.
 	install = { colorscheme = { "habamax" } },
 	-- automatically check for plugin updates
-	checker = { enabled = true },
+	checker = { enabled = false },
 })
 
 -- Color scheme
@@ -731,7 +619,9 @@ vim.keymap.set("v", ">", ">gv", { desc = "Indent right and reselect" })
 vim.keymap.set("n", "J", "mzJ`z", { desc = "Join lines and keep cursor position" })
 
 -- Quick file navigation
--- vim.keymap.set("n", "<leader>fe", ":Dired<CR>", { desc = "Open file explorer" })
+vim.keymap.set("n", "<leader>fe", function()
+	Snacks.explorer()
+end, { desc = "Open file explorer" })
 vim.keymap.set("n", "<leader>ff", Snacks.picker.smart, { desc = "Find file" })
 vim.keymap.set("n", "<leader>fc", ":e ~/.config/nvim/init.lua<CR>", { desc = "Edit config" })
 vim.keymap.set("n", "<leader>fs", ":w<CR>")
@@ -788,36 +678,17 @@ end)
 -- Git
 vim.keymap.set("n", "<leader>g", ":Neogit<CR>")
 
--- Trouble
--- vim.keymap.set("n", "<leader>lD", ":Trouble diagnostics toggle<CR>")
--- vim.keymap.set("n", "<leader>ld", ":Trouble diagnostics toggle filter.buf=0<CR>")
--- vim.keymap.set("n", "<leader>ls", ":Trouble symbols toggle focus=false<CR>")
--- vim.keymap.set("n", "<leader>lL", ":Trouble lsp toggle focus=false win.position=right<CR>")
--- vim.keymap.set("n", "<leader>lL", ":Trouble loclist toggle<CR>")
--- vim.keymap.set("n", "<leader>lq", ":Trouble qflist toggle<CR>")
-
 -- Search
 -- List (Search)
 vim.keymap.set("n", "<leader>sb", Snacks.picker.lines)
 vim.keymap.set("n", "<leader>sg", Snacks.picker.grep, { desc = "Grep" })
 -- vim.keymap.set("n", "<leader>ss", function() MiniExtra.pickers.lsp({ scope = 'document_symbol' }) end, { desc = "Grep" })
 vim.keymap.set("n", "<leader>ss", Snacks.picker.lsp_symbols)
--- delete default keybindings
--- function reloadable_unset_key(mode, keybinding) -- prevent :source error
--- 	-- if not vim.fn.empty(vim.fn.maparg(mode, keybinding)) then -- prevent :source error
--- 	vim.keymap.del(mode, keybinding)
--- 	-- end
--- end
--- reloadable_unset_key("n", "grr")
--- reloadable_unset_key("n", "gri")
--- reloadable_unset_key("n", "grt")
--- reloadable_unset_key("n", "grn")
--- reloadable_unset_key("n", "gra")
--- vim.keymap.set("n", "gr", ":Pick lsp scope='references'<CR>")
 vim.keymap.set("n", "gd", ":lua vim.lsp.buf.definition()<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>sd", Snacks.picker.diagnostics, opts)
 vim.keymap.set("n", "<leader>sm", Snacks.picker.keymaps, opts)
 vim.keymap.set("n", "<leader>sR", Snacks.picker.resume, opts)
+vim.keymap.set("n", "<leader>sh", Snacks.picker.help, opts)
 
 -- Jump
 vim.keymap.set("n", "<leader>jc", ":e ~/.config/nvim/init.lua<CR>")
@@ -871,27 +742,82 @@ vim.keymap.set("n", "<leader>ms", strudel.stop, { desc = "Strudel Stop Playback"
 vim.keymap.set("n", "<leader>mb", strudel.set_buffer, { desc = "Strudel set current buffer" })
 vim.keymap.set("n", "<leader>mx", strudel.execute, { desc = "Strudel set current buffer and update" })
 
--- Visit labels
--- local map_vis = function(keys, call, desc)
--- 	local rhs = "<Cmd>lua MiniVisits." .. call .. "<CR>"
--- 	vim.keymap.set("n", "<Leader>" .. keys, rhs, { desc = desc })
--- end
---
--- map_vis("va", "add_label('core')", "Add label")
--- map_vis("vd", "remove_label('core')", "Remove label")
--- vim.keymap.set("n", "<leader>vv", ":Pick visit_paths cwd='' filter='core'<CR>") -- all core
--- vim.keymap.set("n", "<leader>vV", ":Pick visit_paths cwd=nil filter='core'<CR>") -- cwd core
-
 -- UI
 vim.keymap.set("n", "<leader>uw", ":set wrap!<CR>")
 
--- Open
--- local function open_playground()
--- 	local go_pg = "/Users/june/Code/Areas/Playgrounds/go"
--- 	local cwd = vim.fn.getcwd()
--- 	vim.cmd("cd " .. go_pg)
--- 	vim.cmd("Dired")
--- 	vim.cmd("cd " .. cwd)
--- end
---
--- vim.keymap.set("n", "<leader>op", open_playground)
+-- Path
+local function path_join(...)
+	local parts = { ... }
+	local separator = "/"
+	local result = {}
+
+	-- Ensure all parts are strings and collect them
+	for _, part in ipairs(parts) do
+		table.insert(result, tostring(part))
+	end
+
+	-- Join all parts with the separator
+	local joined = table.concat(result, separator)
+
+	-- Normalize the path by replacing multiple consecutive separators (e.g., "//", "///")
+	-- with a single separator. This handles cases like "dir1/" and "/dir2".
+	joined = joined:gsub(separator .. "{2,}", separator)
+
+	return joined
+end
+
+-- Leetcode
+local leetcode_home = "/Users/june/Code/Projects/Algo/Problems/go/"
+
+function create_new_lc_go_dir(picker)
+	local input = picker:text()
+	if not input then
+		return
+	end
+	local path = leetcode_home .. input
+	if vim.fn.isdirectory(path) == 1 then
+		print("dir already exists")
+		return
+	end
+	vim.fn.mkdir(path)
+	if vim.fn.isdirectory(path) ~= 1 then
+		return
+	end
+
+	local filename = "main.go"
+	local filepath = path_join(path, filename)
+	local content = "package main\n\nfunc main() {\n\n}\n"
+
+	local file = io.open(filepath, "w")
+	if not file then
+		print("failed to create file " .. filename)
+		return
+	end
+	file:write(content)
+	file:close()
+
+	local obj = vim.system({ "go", "mod", "init", input }, { text = true, cwd = path }, on_exit):wait()
+	if obj.code ~= 0 then
+		print(obj.stderr)
+		return
+	end
+
+	picker:close()
+
+	vim.cmd("edit " .. filepath)
+end
+
+function leetcode()
+	Snacks.picker.files({
+		cwd = leetcode_home,
+		win = {
+			input = {
+				keys = {
+					["<C-cr>"] = { create_new_lc_go_dir, mode = { "n", "i" } },
+				},
+			},
+		},
+	})
+end
+
+vim.keymap.set("n", "<leader>cl", leetcode)
