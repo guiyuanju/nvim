@@ -714,6 +714,7 @@ vim.keymap.set("n", "<leader>op", function()
 		dir_path = "attachments",
 		prompt_for_file_name = false,
 		template = "![[$FILE_NAME]]$CURSOR",
+		insert_mode_after_paste = false,
 	})
 end)
 
@@ -821,3 +822,19 @@ function leetcode()
 end
 
 vim.keymap.set("n", "<leader>cl", leetcode)
+
+function backlinks()
+	local name = vim.fn.bufname()
+	local name_stem = name:gsub("%.[^.]+$", "")
+	Snacks.picker.grep({
+		dirs = { ob_home },
+		search = "\\[\\[" .. name_stem,
+		ft = "md",
+		title = "Backlinks",
+	})
+end
+
+vim.keymap.set("n", "<leader>ob", backlinks)
+
+vim.keymap.set("n", "<leader>sp", Snacks.picker.spelling)
+vim.keymap.set("n", "z=", Snacks.picker.spelling)
