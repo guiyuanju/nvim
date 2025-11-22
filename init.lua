@@ -52,6 +52,12 @@ vim.opt.conceallevel = 2 -- don't hide markup
 vim.opt.concealcursor = "" -- don't hide cursor line markup
 vim.opt.lazyredraw = true -- don't redraw during macros
 vim.opt.synmaxcol = 300 -- syntax highlighting limit
+vim.opt.guicursor = {
+	"n-v-c:block", -- normal/visual/command modes: block cursor
+	"i-ci-ve:ver25", -- insert modes: vertical bar (25% width)
+	"r-cr:hor20", -- replace modes: horizontal bar (20% height)
+	"o:hor50", -- operator-pending mode: horizontal bar (50%)
+}
 
 -- File handling
 vim.opt.backup = false -- don't create backup files
@@ -81,6 +87,16 @@ vim.opt.mouse = "a" -- enable mouse support
 vim.opt.clipboard:append("unnamedplus") -- use system clipboard
 vim.opt.modifiable = true -- allow buffer modifications
 vim.opt.encoding = "UTF-8" -- set encoding
+-- auto save
+vim.opt.autowriteall = true
+-- vim.api.nvim_create_autocmd({ "InsertLeavePre", "TextChanged", "TextChangedP" }, {
+-- 	pattern = "*",
+-- 	callback = function()
+-- 		if vim.bo.modifiable and not vim.bo.readonly then
+-- 			vim.cmd("silent! update")
+-- 		end
+-- 	end,
+-- })
 
 -- Split behavior
 vim.opt.splitbelow = true -- Horizontal splits go below
@@ -152,6 +168,16 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 			vim.fn.mkdir(dir, "p")
 		end
 	end,
+})
+
+vim.api.nvim_create_augroup("Spellcheck", { clear = true })
+vim.api.nvim_create_autocmd({ "FileType" }, {
+	group = "Spellcheck", -- Grouping the command for easier management
+	pattern = { "text", "plaintex", "typst", "gitcommit", "markdown" }, -- Only apply to these file types
+	callback = function()
+		vim.opt_local.spell = true -- Enable spellcheck for these file types
+	end,
+	desc = "Enable spellcheck for defined filetypes", -- Description for clarity
 })
 
 -- ============================================================================
@@ -433,6 +459,55 @@ require("lazy").setup({
 			event = "VeryLazy",
 			opts = {},
 		},
+		{
+			"folke/todo-comments.nvim",
+			dependencies = { "nvim-lua/plenary.nvim" },
+			lazy = false,
+			opts = {},
+			keys = {
+				{
+					"<leader>st",
+					function()
+						Snacks.picker.todo_comments()
+					end,
+					desc = "Todo",
+				},
+				{
+					"<leader>sT",
+					function()
+						Snacks.picker.todo_comments({ keywords = { "TODO", "FIX", "FIXME" } })
+					end,
+					desc = "Todo/Fix/Fixme",
+				},
+				-- TODO
+				-- vim.keymap.set("n", "<leader>st", Snacks.picker.todo_comments)
+				-- vim.keymap.set("n", "<leader>sT", function()
+				-- 	Snacks.picker.todo_comments({ keywords = { "TODO", "FIX", "FIXME" } })
+				-- end)
+			},
+		},
+		{
+			"chrisgrieser/nvim-origami",
+			event = "VeryLazy",
+			opts = {}, -- needed even when using default config
+
+			-- recommended: disable vim's auto-folding
+			init = function()
+				vim.opt.foldlevel = 99
+				vim.opt.foldlevelstart = 99
+			end,
+		},
+		{
+			"Olical/conjure",
+			ft = { "clojure", "fennel", "python" }, -- etc
+			lazy = true,
+			init = function()
+				-- Set configuration options here
+				-- Uncomment this to get verbose logging to help diagnose internal Conjure issues
+				-- This is VERY helpful when reporting an issue with the project
+				-- vim.g["conjure#debug"] = true
+			end,
+		},
 		--Color Schemes
 		{ "olimorris/onedarkpro.nvim" },
 		{ "catppuccin/nvim" },
@@ -510,6 +585,7 @@ vim.lsp.enable("lua-language-server")
 vim.lsp.enable("marksman")
 vim.lsp.enable("shfmt")
 vim.lsp.enable("stylua")
+vim.lsp.enable("clangd")
 
 -- LSP keymaps
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -591,6 +667,14 @@ vim.keymap.set("n", "<leader>`", ":b#<CR>", { desc = "Previous active buffer" })
 -- Window navigation
 vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
 vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to bottom window" })
+vim.api.nvim_create_autocmd("BufEnter", {
+	callback = function()
+		if vim.bo.buftype == "terminal" then
+			vim.cmd("startinsert")
+		end
+	end,
+	desc = "Auto-enter insert mode when entering a terminal buffer",
+})
 vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to top window" })
 vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
 
@@ -836,5 +920,7 @@ end
 
 vim.keymap.set("n", "<leader>ob", backlinks)
 
-vim.keymap.set("n", "<leader>sp", Snacks.picker.spelling)
+vim.keymap.set("n", "<leader>sp", Snacks.picker.resume)
 vim.keymap.set("n", "z=", Snacks.picker.spelling)
+
+vim.keymap.set("n", "<leader><leader>", Snacks.picker.files)
